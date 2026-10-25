@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Новобранец Буданов Ярослав Артурович — Штаб ожидания</title>
-  <meta name="description" content="Официальный штаб ожидания дембеля. Новобранец Буданов Ярослав Артурович. Счётчик службы, эквиваленты и стена напутствий.">
+  <meta name="description" content="Официальный штаб ожидания дембеля. Новобранец Буданов Ярослав Артурович.">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -12,7 +12,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-  <!-- Шрифты Google -->
+  <!-- Шрифты -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
@@ -23,12 +23,12 @@
         extend: {
           colors: {
             army: {
-              950: '#080a08',
-              900: '#0d110d',
-              850: '#111711',
-              800: '#151b15',
-              700: '#202920',
-              600: '#2f3d2f',
+              950: '#070907',
+              900: '#0e120e',
+              850: '#131813',
+              800: '#182018',
+              700: '#232d23',
+              600: '#324032',
               accent: '#f59e0b',
               green: '#10b981',
               red: '#ef4444'
@@ -45,65 +45,57 @@
   </script>
 
   <style>
-    * {
+    *, *::before, *::after {
       box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
     }
-    body {
-      background-color: #080a08;
-      color: #e5e7eb;
+    html, body {
+      max-width: 100vw;
       overflow-x: hidden;
+      background-color: #070907;
+      color: #e5e7eb;
     }
-    /* Тактическая сетка */
     .bg-tactical-grid {
-      background-size: 32px 32px;
+      background-size: 28px 28px;
       background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
     }
-    /* Полосы шлагбаума КПП */
     .barrier-stripes {
       background: repeating-linear-gradient(
         -45deg,
         #dc2626,
-        #dc2626 16px,
-        #f8fafc 16px,
-        #f8fafc 32px
+        #dc2626 14px,
+        #f8fafc 14px,
+        #f8fafc 28px
       );
     }
-    /* Плавный подъем шлагбаума */
     .barrier-arm {
-      transform-origin: 16px 50%;
+      transform-origin: 14px 50%;
       transition: transform 1.5s cubic-bezier(0.65, 0, 0.25, 1);
     }
     .barrier-arm.open {
       transform: rotate(-78deg);
     }
-    /* Анимация ошибки */
     @keyframes shakeError {
       0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-8px); }
-      40%, 80% { transform: translateX(8px); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
     }
     .shake {
       animation: shakeError 0.4s ease-in-out;
     }
-    /* Центровка пароля без смещений */
     .kpp-pass-input {
       text-align: center;
-      letter-spacing: 0.35em;
-      font-size: 20px;
+      letter-spacing: 0.3em;
     }
-    @media (min-width: 640px) {
-      .kpp-pass-input {
-        letter-spacing: 0.5em;
-        font-size: 24px;
-      }
+    /* Кастомный горизонтальный скроллбар для мобилок */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
     }
-    input[type=range] {
-      accent-color: #f59e0b;
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
-    /* Предотвращение зума на iOS при клике на инпут */
     input, textarea, select {
       font-size: 16px !important;
     }
@@ -112,59 +104,49 @@
 <body class="bg-tactical-grid min-h-screen flex flex-col justify-between selection:bg-army-accent selection:text-black">
 
   <!-- ========================================================= -->
-  <!-- ЭКРАН 0: КОНТРОЛЬНО-ПРОПУСКНОЙ ПУНКТ (КПП)                -->
+  <!-- ЭКРАН 0: КПП (ВХОД ПО ПАРОЛЮ 08102004)                    -->
   <!-- ========================================================= -->
-  <div id="kpp-overlay" class="fixed inset-0 z-50 bg-army-950/98 backdrop-blur-2xl flex flex-col items-center justify-center p-3 sm:p-4 transition-all duration-700">
-    
-    <!-- Верхний индикатор КПП -->
-    <div class="mb-4 sm:mb-6 flex items-center space-x-2.5 bg-army-900/90 px-4 py-2 rounded-full border border-army-700 shadow-xl">
-      <div id="kpp-light-red" class="w-3.5 h-3.5 rounded-full bg-army-red shadow-[0_0_14px_#ef4444] transition-all duration-300"></div>
-      <div id="kpp-light-green" class="w-3.5 h-3.5 rounded-full bg-army-700 transition-all duration-300"></div>
-      <span id="kpp-status-text" class="font-mono text-[11px] sm:text-xs uppercase tracking-widest text-gray-300 pl-1 font-bold">КПП ЗАКРЫТО • ОСОБЫЙ РЕЖИМ</span>
+  <div id="kpp-overlay" class="fixed inset-0 z-50 bg-army-950/98 backdrop-blur-2xl flex flex-col items-center justify-center p-3 transition-all duration-700">
+    <div class="mb-4 flex items-center space-x-2 bg-army-900 px-3.5 py-1.5 rounded-full border border-army-700 shadow-xl">
+      <div id="kpp-light-red" class="w-3 h-3 rounded-full bg-army-red shadow-[0_0_12px_#ef4444] transition-all"></div>
+      <div id="kpp-light-green" class="w-3 h-3 rounded-full bg-army-700 transition-all"></div>
+      <span id="kpp-status-text" class="font-mono text-[10px] sm:text-xs uppercase tracking-widest text-gray-300 font-bold">КПП ЗАКРЫТО • РЕЖИМ</span>
     </div>
 
-    <!-- Модуль КПП -->
-    <div id="kpp-card" class="w-full max-w-md bg-army-900 border-2 border-army-700 rounded-2xl p-5 sm:p-7 shadow-[0_0_40px_rgba(0,0,0,0.8)] relative overflow-hidden">
-      <!-- Угловые тактические засечки -->
-      <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-army-accent"></div>
-      <div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-army-accent"></div>
-      <div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-army-accent"></div>
-      <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-army-accent"></div>
+    <div id="kpp-card" class="w-full max-w-sm bg-army-900 border-2 border-army-700 rounded-2xl p-4 sm:p-6 shadow-2xl relative">
+      <div class="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-army-accent"></div>
+      <div class="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-army-accent"></div>
+      <div class="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-army-accent"></div>
+      <div class="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-army-accent"></div>
 
-      <!-- Анимированный пост КПП со шлагбаумом -->
-      <div class="relative w-full h-28 sm:h-32 mb-5 bg-army-950 rounded-xl border border-army-700 flex items-end pb-4 px-4 overflow-hidden">
-        <div class="absolute inset-0 opacity-20 bg-tactical-grid"></div>
-
-        <!-- Постовая будка -->
+      <div class="relative w-full h-24 mb-4 bg-army-950 rounded-xl border border-army-700 flex items-end pb-3 px-3 overflow-hidden">
         <div class="relative z-20 flex flex-col items-center mr-2">
-          <div class="w-9 h-14 bg-army-800 border border-army-600 rounded-t flex flex-col items-center justify-start pt-1 shadow-md">
-            <div class="w-5 h-4 bg-amber-500/30 border border-amber-500/50 rounded-sm mb-1"></div>
-            <span class="text-[7px] font-mono text-army-accent font-bold">ПОСТ</span>
+          <div class="w-8 h-12 bg-army-800 border border-army-600 rounded-t flex flex-col items-center justify-start pt-1">
+            <div class="w-4 h-3 bg-amber-500/30 border border-amber-500/50 rounded-sm mb-1"></div>
+            <span class="text-[6px] font-mono text-army-accent font-bold">ПОСТ</span>
           </div>
         </div>
 
-        <!-- Опорная тумба и стрела шлагбаума -->
         <div class="relative flex items-center">
-          <div class="w-6 sm:w-7 h-11 bg-gradient-to-b from-gray-700 to-gray-900 border border-gray-500 rounded-t z-20 flex items-center justify-center shadow-lg">
-            <div id="kpp-axle-dot" class="w-2.5 h-2.5 rounded-full bg-army-red animate-pulse"></div>
+          <div class="w-6 h-10 bg-gradient-to-b from-gray-700 to-gray-900 border border-gray-500 rounded-t z-20 flex items-center justify-center">
+            <div id="kpp-axle-dot" class="w-2 h-2 rounded-full bg-army-red animate-pulse"></div>
           </div>
-          <div id="barrier-arm" class="barrier-arm barrier-stripes h-3.5 w-52 sm:w-64 rounded-r-md shadow-2xl z-10 -ml-3 border border-black/40"></div>
+          <div id="barrier-arm" class="barrier-arm barrier-stripes h-3 w-48 sm:w-56 rounded-r z-10 -ml-2.5 border border-black/40"></div>
         </div>
 
-        <!-- Табличка зоны допуска -->
-        <div class="absolute top-2.5 right-3 text-right">
-          <span class="text-[9px] sm:text-[10px] font-mono font-bold text-army-red uppercase block tracking-wider">ЗОНА ДОПУСКА #0810</span>
-          <span class="text-[8px] sm:text-[9px] font-mono text-gray-500 block">Вход по персональному шифру</span>
+        <div class="absolute top-2 right-2 text-right">
+          <span class="text-[8px] font-mono font-bold text-army-red uppercase block">ЗОНА #0810</span>
+          <span class="text-[7px] font-mono text-gray-500 block">Вход по шифру</span>
         </div>
       </div>
 
-      <div class="text-center mb-5">
-        <h1 class="font-display text-xl sm:text-2xl font-bold text-white uppercase tracking-wide">ШТАБ: ЯРОСЛАВ БУДАНОВ</h1>
-        <p class="text-xs text-gray-400 mt-1">Для поднятия шлагбаума введите дату рождения Ярослава (8 цифр)</p>
+      <div class="text-center mb-4">
+        <h1 class="font-display text-lg sm:text-xl font-bold text-white uppercase tracking-wide">ШТАБ: ЯРОСЛАВ БУДАНОВ</h1>
+        <p class="text-[11px] text-gray-400 mt-0.5">Введите дату рождения бойца (8 цифр)</p>
       </div>
 
-      <form id="kpp-form" class="space-y-4">
-        <div class="relative">
+      <form id="kpp-form" class="space-y-3">
+        <div>
           <input 
             type="password" 
             id="kpp-input" 
@@ -172,64 +154,50 @@
             maxlength="8" 
             placeholder="••••••••" 
             autocomplete="new-password"
-            autocorrect="off"
-            autocapitalize="off"
-            spellcheck="false"
-            data-lpignore="true"
-            data-form-type="other"
-            class="kpp-pass-input w-full bg-army-950 border-2 border-army-600 focus:border-army-accent rounded-xl py-3 px-3 text-center font-mono text-army-accent placeholder:text-gray-700 focus:outline-none transition-all shadow-inner"
+            class="kpp-pass-input w-full bg-army-950 border-2 border-army-600 focus:border-army-accent rounded-xl py-2.5 px-3 text-center font-mono text-lg text-army-accent placeholder:text-gray-700 focus:outline-none transition-all shadow-inner"
           >
-          <p id="kpp-error" class="hidden text-army-red text-xs font-mono text-center mt-2 font-semibold tracking-wide">
-            ⛔ ОТКАЗАНО В ДОСТУПЕ. ВВЕДИТЕ ДАТУ В ФОРМАТЕ ДДММГГГГ
+          <p id="kpp-error" class="hidden text-army-red text-[10px] font-mono text-center mt-1.5 font-semibold">
+            ⛔ НЕВЕРНЫЙ ШИФР. ФОРМАТ: ДДММГГГГ
           </p>
         </div>
 
         <button 
           type="submit" 
-          id="kpp-submit-btn"
-          class="w-full bg-army-accent hover:bg-amber-400 text-black font-display font-bold py-3.5 px-6 rounded-xl uppercase tracking-wider text-sm transition-all transform active:scale-95 shadow-lg shadow-amber-500/10 flex items-center justify-center space-x-2"
+          class="w-full bg-army-accent hover:bg-amber-400 text-black font-display font-bold py-3 px-4 rounded-xl uppercase tracking-wider text-xs transition-all active:scale-95 shadow-md flex items-center justify-center space-x-1.5"
         >
           <span>ОТКРЫТЬ ШЛАГБАУМ</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
         </button>
       </form>
-
-      <div class="mt-4 pt-3 border-t border-army-800 flex justify-between items-center text-[10px] font-mono text-gray-500">
-        <span>YAROSLAVBUDANOV.RU</span>
-        <span>СЕМЬЯ И БЛИЗКИЕ</span>
-      </div>
     </div>
   </div>
 
   <!-- ========================================================= -->
-  <!-- ШАПКА ШТАБА                                               -->
+  <!-- ШАПКА ШТАБА (АДАПТИВНАЯ, НЕ ВЫЛЕЗАЕТ ВПРАВО)              -->
   <!-- ========================================================= -->
-  <header class="sticky top-0 z-30 bg-army-950/90 backdrop-blur-md border-b border-army-800">
-    <div class="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <span class="relative flex h-2.5 w-2.5">
+  <header class="sticky top-0 z-30 bg-army-950/95 backdrop-blur-md border-b border-army-800/80">
+    <div class="max-w-4xl mx-auto px-3 py-2 flex items-center justify-between gap-2">
+      <div class="flex items-center space-x-1.5 min-w-0">
+        <span class="relative flex h-2 w-2 shrink-0">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-army-green opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-army-green"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-army-green"></span>
         </span>
-        <span class="font-mono text-xs sm:text-sm font-bold tracking-wider text-white uppercase truncate">БОЕВОЙ ПОСТ • БУДАНОВ Я.А.</span>
+        <span class="font-mono text-[11px] sm:text-xs font-bold tracking-wider text-white uppercase truncate">БУДАНОВ Я.А.</span>
+        <span id="live-clock" class="font-mono text-[10px] text-army-accent bg-army-900 px-1.5 py-0.5 rounded border border-army-800 shrink-0">--:--:--</span>
       </div>
 
-      <div class="flex items-center space-x-2 sm:space-x-3">
-        <span id="live-clock" class="font-mono text-[11px] sm:text-xs text-army-accent bg-army-900 px-2 py-1 rounded border border-army-700">--:--:--</span>
-        
-        <!-- Кнопка «Поделиться сайтом» -->
+      <div class="flex items-center space-x-1.5 shrink-0">
         <button 
           type="button" 
           onclick="shareSiteLink()" 
           id="btn-share"
-          title="Скопировать ссылку на штаб"
-          class="bg-army-800 hover:bg-army-700 text-gray-300 border border-army-600 font-mono text-[11px] px-2.5 py-1 rounded flex items-center space-x-1 transition"
+          class="bg-army-900 hover:bg-army-800 text-gray-300 border border-army-700 font-mono text-[10px] px-2 py-1 rounded transition flex items-center space-x-1"
         >
           <span>🔗</span>
           <span class="hidden sm:inline">Ссылка</span>
         </button>
 
-        <a href="#wishes-section" class="bg-army-accent/20 hover:bg-army-accent text-army-accent hover:text-black border border-army-accent/50 font-mono text-[11px] px-2.5 py-1 rounded transition font-bold">
+        <a href="#wishes-section" class="bg-army-accent text-black font-mono text-[10px] px-2.5 py-1 rounded font-bold hover:bg-amber-400 transition">
           Написать ↓
         </a>
       </div>
@@ -237,63 +205,61 @@
   </header>
 
   <!-- ========================================================= -->
-  <!-- ОСНОВНОЙ КОНТЕНТ                                          -->
+  <!-- ОСНОВНОЙ КОНТЕНТ (КОМПАКТНЫЙ И АККУРАТНЫЙ)               -->
   <!-- ========================================================= -->
-  <main class="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8 space-y-6 sm:space-y-10 w-full">
+  <main class="max-w-4xl mx-auto px-3 py-4 sm:py-6 space-y-4 sm:space-y-6 w-full">
 
     <!-- ========================================================= -->
-    <!-- БЛОК 1: КАРТОЧКА БОЙЦА (ЛИЧНОЕ ДЕЛО)                      -->
+    <!-- 1. КАРТОЧКА БОЙЦА                                         -->
     <!-- ========================================================= -->
-    <section class="bg-army-900/90 border border-army-700 rounded-2xl p-4 sm:p-8 shadow-2xl relative overflow-hidden">
-      <div class="absolute top-0 right-0 bg-army-accent text-black font-mono text-[9px] sm:text-[10px] font-extrabold px-3 py-1 rounded-bl-lg uppercase tracking-widest">
-        ЛИЧНОЕ ДЕЛО № 081004
+    <section class="bg-army-900/90 border border-army-700/80 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden">
+      <div class="absolute top-0 right-0 bg-army-accent text-black font-mono text-[8px] sm:text-[9px] font-extrabold px-2.5 py-0.5 rounded-bl-lg uppercase tracking-wider">
+        ЛИЧНОЕ ДЕЛО #081004
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-8 items-center">
-        <!-- Фотография бойца -->
-        <div class="md:col-span-4 flex flex-col items-center">
-          <div class="relative w-52 h-64 sm:w-64 sm:h-72 rounded-xl overflow-hidden border-2 border-army-600 shadow-2xl bg-army-950 group">
-            <img 
-              id="soldier-photo"
-              src="https://lh3.googleusercontent.com/d/1UYhdQluGfWQ1Yn1OVKNz9hWh0E0wM5EQ=w1000" 
-              onerror="if(this.src.indexOf('thumbnail')===-1){this.src='https://drive.google.com/thumbnail?id=1UYhdQluGfWQ1Yn1OVKNz9hWh0E0wM5EQ&sz=w1000';}else{this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 240%22><rect width=%22200%22 height=%22240%22 fill=%22%23151b15%22/><circle cx=%22100%22 cy=%2285%22 r=%2240%22 fill=%22%232f3d2f%22/><path d=%22M35 220 C35 155 165 155 165 220%22 fill=%22%232f3d2f%22/></svg>';}"
-              alt="Новобранец Буданов Ярослав Артурович" 
-              class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-            >
-            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-2.5 text-center">
-              <span class="font-mono text-[10px] text-army-accent font-bold tracking-wider uppercase">ПРИЗЫВ ОСЕНЬ 2026</span>
-            </div>
+      <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+        <!-- Фотография -->
+        <div class="relative w-40 h-48 sm:w-48 sm:h-56 rounded-xl overflow-hidden border-2 border-army-600 shadow-xl bg-army-950 shrink-0">
+          <img 
+            id="soldier-photo"
+            src="https://lh3.googleusercontent.com/d/1UYhdQluGfWQ1Yn1OVKNz9hWh0E0wM5EQ=w800" 
+            onerror="if(this.src.indexOf('thumbnail')===-1){this.src='https://drive.google.com/thumbnail?id=1UYhdQluGfWQ1Yn1OVKNz9hWh0E0wM5EQ&sz=w800';}else{this.onerror=null;}"
+            alt="Новобранец Буданов Ярослав Артурович" 
+            class="w-full h-full object-cover object-center"
+          >
+          <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-1.5 text-center">
+            <span class="font-mono text-[9px] text-army-accent font-bold tracking-wider uppercase">ПРИЗЫВ ОСЕНЬ 2026</span>
           </div>
         </div>
 
-        <!-- Данные формуляра -->
-        <div class="md:col-span-8 space-y-4 sm:space-y-5 text-center md:text-left">
+        <!-- Данные -->
+        <div class="flex-1 text-center sm:text-left space-y-2.5">
           <div>
-            <div class="inline-flex items-center space-x-2 bg-army-800 border border-army-600 px-3 py-1 rounded-full mb-2.5">
-              <span class="w-2 h-2 rounded-full bg-army-accent animate-pulse"></span>
-              <span id="service-phase-badge" class="font-mono text-[11px] sm:text-xs text-gray-300 uppercase">Статус: Боевая готовность</span>
+            <div class="inline-flex items-center space-x-1.5 bg-army-800 border border-army-600 px-2 py-0.5 rounded-full mb-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-army-accent animate-pulse"></span>
+              <span id="service-phase-badge" class="font-mono text-[10px] text-gray-300 uppercase">Боевая готовность</span>
             </div>
-            <h1 class="font-display text-xl sm:text-3xl lg:text-4xl font-bold text-white uppercase tracking-tight leading-snug">
+            <h1 class="font-display text-lg sm:text-2xl font-bold text-white uppercase tracking-tight leading-snug">
               Новобранец Буданов Ярослав Артурович
             </h1>
-            <p class="text-xs sm:text-sm text-gray-400 mt-2 leading-relaxed">
-              Персональный штаб отсчёта времени до возвращения домой. Здесь близкие, родственники и друзья всегда могут узнать точный остаток службы и оставить пару тёплых слов.
+            <p class="text-[11px] sm:text-xs text-gray-400 mt-1 leading-relaxed">
+              Штаб отсчёта времени до дембеля. Узнайте точный остаток службы и оставьте тёплые слова бойцу!
             </p>
           </div>
 
           <!-- Даты -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 pt-1">
-            <div class="bg-army-950 border border-army-800 p-3 rounded-xl text-left">
-              <span class="text-[9px] sm:text-[10px] font-mono text-gray-500 uppercase block">ДАТА ОТПРАВКИ</span>
-              <span class="font-mono text-xs sm:text-sm md:text-base font-bold text-white mt-0.5 block">26.10.2026</span>
+          <div class="grid grid-cols-3 gap-1.5 sm:gap-2 pt-1 text-left">
+            <div class="bg-army-950 border border-army-800 p-2 rounded-lg">
+              <span class="text-[8px] font-mono text-gray-500 uppercase block">ОТПРАВКА</span>
+              <span class="font-mono text-[11px] sm:text-xs font-bold text-white block mt-0.5">26.10.2026</span>
             </div>
-            <div class="bg-army-950 border border-army-800 p-3 rounded-xl text-left">
-              <span class="text-[9px] sm:text-[10px] font-mono text-gray-500 uppercase block">ДАТА ДЕМБЕЛЯ</span>
-              <span class="font-mono text-xs sm:text-sm md:text-base font-bold text-army-green mt-0.5 block">26.10.2027</span>
+            <div class="bg-army-950 border border-army-800 p-2 rounded-lg">
+              <span class="text-[8px] font-mono text-gray-500 uppercase block">ДЕМБЕЛЬ</span>
+              <span class="font-mono text-[11px] sm:text-xs font-bold text-army-green block mt-0.5">26.10.2027</span>
             </div>
-            <div class="col-span-2 sm:col-span-1 bg-army-950 border border-army-800 p-3 rounded-xl text-left">
-              <span class="text-[9px] sm:text-[10px] font-mono text-gray-500 uppercase block">ЗВАНИЕ ПО СРОКУ</span>
-              <span id="soldier-rank-title" class="font-mono text-xs sm:text-sm md:text-base font-bold text-army-accent mt-0.5 block">Новобранец</span>
+            <div class="bg-army-950 border border-army-800 p-2 rounded-lg">
+              <span class="text-[8px] font-mono text-gray-500 uppercase block">СТАТУС</span>
+              <span id="soldier-rank-title" class="font-mono text-[11px] sm:text-xs font-bold text-army-accent block mt-0.5 truncate">Новобранец</span>
             </div>
           </div>
         </div>
@@ -301,315 +267,293 @@
     </section>
 
     <!-- ========================================================= -->
-    <!-- БЛОК 2: ТАЙМЕР ДЕМБЕЛЯ И КЛИКАБЕЛЬНЫЕ ВЕХИ СЛУЖБЫ         -->
+    <!-- 2. ТАЙМЕР И ВЕХИ СЛУЖБЫ                                   -->
     <!-- ========================================================= -->
-    <section class="bg-army-900/90 border border-army-700 rounded-2xl p-4 sm:p-8 shadow-2xl space-y-5 sm:space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-army-800 pb-3 sm:pb-4">
+    <section class="bg-army-900/90 border border-army-700/80 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+      <div class="flex items-center justify-between border-b border-army-800 pb-2.5">
         <div>
-          <h2 id="countdown-heading" class="font-display text-lg sm:text-2xl font-bold text-white uppercase tracking-wide">
-            ⏳ ДО ДЕМБЕЛЯ ЯРОСЛАВА ОСТАЛОСЬ:
+          <h2 id="countdown-heading" class="font-display text-base sm:text-xl font-bold text-white uppercase">
+            ⏳ ДО ДЕМБЕЛЯ ОСТАЛОСЬ:
           </h2>
-          <p id="countdown-subtitle" class="text-xs text-gray-400">Точный расчёт в режиме реального времени</p>
+          <p id="countdown-subtitle" class="text-[10px] text-gray-400">Счётчик в реальном времени</p>
         </div>
-        <div class="bg-army-950 border border-army-700 px-3 py-1.5 sm:py-2 rounded-xl self-start sm:self-auto">
-          <span class="text-[9px] sm:text-[10px] font-mono text-gray-400 uppercase block">ПРОЙДЕНО СЛУЖБЫ:</span>
-          <span id="progress-percent-exact" class="font-mono text-sm sm:text-lg font-extrabold text-army-accent">0.000000%</span>
-        </div>
-      </div>
-
-      <!-- Табло таймера -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
-        <div class="bg-army-950 border-2 border-army-700 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center shadow-inner">
-          <span id="t-days" class="font-mono text-2xl sm:text-5xl font-extrabold text-white block">365</span>
-          <span class="font-mono text-[10px] sm:text-xs text-gray-400 uppercase tracking-widest mt-1 block">Дней</span>
-        </div>
-        <div class="bg-army-950 border-2 border-army-700 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center shadow-inner">
-          <span id="t-hours" class="font-mono text-2xl sm:text-5xl font-extrabold text-white block">00</span>
-          <span class="font-mono text-[10px] sm:text-xs text-gray-400 uppercase tracking-widest mt-1 block">Часов</span>
-        </div>
-        <div class="bg-army-950 border-2 border-army-700 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center shadow-inner">
-          <span id="t-mins" class="font-mono text-2xl sm:text-5xl font-extrabold text-white block">00</span>
-          <span class="font-mono text-[10px] sm:text-xs text-gray-400 uppercase tracking-widest mt-1 block">Минут</span>
-        </div>
-        <div class="bg-army-950 border-2 border-army-accent/60 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center shadow-inner">
-          <span id="t-secs" class="font-mono text-2xl sm:text-5xl font-extrabold text-army-accent block">00</span>
-          <span class="font-mono text-[10px] sm:text-xs text-army-accent uppercase tracking-widest mt-1 block">Секунд</span>
+        <div class="bg-army-950 border border-army-700 px-2.5 py-1 rounded-lg text-right">
+          <span class="text-[8px] font-mono text-gray-400 uppercase block">ПРОЙДЕНО:</span>
+          <span id="progress-percent-exact" class="font-mono text-xs sm:text-sm font-extrabold text-army-accent">0.000000%</span>
         </div>
       </div>
 
-      <!-- Сводка и прогресс-бар -->
-      <div class="space-y-2">
-        <div class="flex justify-between text-xs font-mono">
+      <!-- Табло 4 цифр -->
+      <div class="grid grid-cols-4 gap-1.5 sm:gap-3">
+        <div class="bg-army-950 border border-army-700 rounded-xl p-2 sm:p-3 text-center">
+          <span id="t-days" class="font-mono text-xl sm:text-3xl font-extrabold text-white block">365</span>
+          <span class="font-mono text-[8px] sm:text-[10px] text-gray-400 uppercase mt-0.5 block">Дней</span>
+        </div>
+        <div class="bg-army-950 border border-army-700 rounded-xl p-2 sm:p-3 text-center">
+          <span id="t-hours" class="font-mono text-xl sm:text-3xl font-extrabold text-white block">00</span>
+          <span class="font-mono text-[8px] sm:text-[10px] text-gray-400 uppercase mt-0.5 block">Часов</span>
+        </div>
+        <div class="bg-army-950 border border-army-700 rounded-xl p-2 sm:p-3 text-center">
+          <span id="t-mins" class="font-mono text-xl sm:text-3xl font-extrabold text-white block">00</span>
+          <span class="font-mono text-[8px] sm:text-[10px] text-gray-400 uppercase mt-0.5 block">Минут</span>
+        </div>
+        <div class="bg-army-950 border border-army-accent/60 rounded-xl p-2 sm:p-3 text-center">
+          <span id="t-secs" class="font-mono text-xl sm:text-3xl font-extrabold text-army-accent block">00</span>
+          <span class="font-mono text-[8px] sm:text-[10px] text-army-accent uppercase mt-0.5 block">Секунд</span>
+        </div>
+      </div>
+
+      <!-- Прогресс бар -->
+      <div class="space-y-1.5">
+        <div class="flex justify-between text-[10px] font-mono">
           <span class="text-army-green">Позади: <strong id="days-passed-label">0</strong> дн.</span>
-          <span class="text-gray-400">Всего: <strong>365</strong> дн.</span>
+          <span class="text-gray-400">Всего: 365 дн.</span>
           <span class="text-army-accent">Осталось: <strong id="days-left-label">365</strong> дн.</span>
         </div>
-        <div class="w-full h-3.5 sm:h-4 bg-army-950 rounded-full overflow-hidden border border-army-700 p-0.5">
+        <div class="w-full h-2.5 bg-army-950 rounded-full overflow-hidden border border-army-700 p-0.5">
           <div id="progress-bar-fill" class="h-full bg-gradient-to-r from-amber-600 via-army-accent to-army-green rounded-full transition-all duration-300" style="width: 0%"></div>
         </div>
       </div>
 
-      <!-- КЛИКАБЕЛЬНЫЕ ВЕХИ СЛУЖБЫ -->
-      <div>
-        <div class="text-[10px] font-mono text-gray-400 mb-2 uppercase tracking-wider flex items-center justify-between">
-          <span>Армейские вехи (нажмите, чтобы посмотреть эквиваленты дня):</span>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center font-mono text-[10px] sm:text-[11px]">
-          <button type="button" onclick="setSimDay(50)" id="stage-1" class="p-2 sm:p-2.5 rounded-lg border border-army-700 bg-army-950 text-gray-300 hover:border-army-accent transition active:scale-95 text-center">
-            <div class="font-bold text-white">0–100 дн.</div>
-            <div>Дух / КМБ</div>
+      <!-- Кликабельные вехи -->
+      <div class="pt-1">
+        <span class="text-[9px] font-mono text-gray-400 block mb-1.5 uppercase">Армейские вехи (нажмите для просмотра):</span>
+        <div class="grid grid-cols-5 gap-1 text-center font-mono text-[8px] sm:text-[10px]">
+          <button type="button" onclick="setSimDay(50)" id="stage-1" class="p-1 sm:p-2 rounded bg-army-950 border border-army-700 hover:border-army-accent transition">
+            <b class="text-white block">0-100</b><span>Дух</span>
           </button>
-          <button type="button" onclick="setSimDay(140)" id="stage-2" class="p-2 sm:p-2.5 rounded-lg border border-army-700 bg-army-950 text-gray-300 hover:border-army-accent transition active:scale-95 text-center">
-            <div class="font-bold text-white">100–182 дн.</div>
-            <div>Слон</div>
+          <button type="button" onclick="setSimDay(140)" id="stage-2" class="p-1 sm:p-2 rounded bg-army-950 border border-army-700 hover:border-army-accent transition">
+            <b class="text-white block">100-182</b><span>Слон</span>
           </button>
-          <button type="button" onclick="setSimDay(182)" id="stage-3" class="p-2 sm:p-2.5 rounded-lg border border-army-700 bg-army-950 text-gray-300 hover:border-army-accent transition active:scale-95 text-center">
-            <div class="font-bold text-white">182 дн.</div>
-            <div>Экватор / Черпак</div>
+          <button type="button" onclick="setSimDay(182)" id="stage-3" class="p-1 sm:p-2 rounded bg-army-950 border border-army-700 hover:border-army-accent transition">
+            <b class="text-white block">182</b><span>Экватор</span>
           </button>
-          <button type="button" onclick="setSimDay(265)" id="stage-4" class="p-2 sm:p-2.5 rounded-lg border border-army-700 bg-army-950 text-gray-300 hover:border-army-accent transition active:scale-95 text-center">
-            <div class="font-bold text-white">265+ дн.</div>
-            <div>100 дней до приказа</div>
+          <button type="button" onclick="setSimDay(265)" id="stage-4" class="p-1 sm:p-2 rounded bg-army-950 border border-army-700 hover:border-army-accent transition">
+            <b class="text-white block">265+</b><span>Дед</span>
           </button>
-          <button type="button" onclick="setSimDay(365)" id="stage-5" class="col-span-2 sm:col-span-1 p-2 sm:p-2.5 rounded-lg border border-army-700 bg-army-950 text-gray-300 hover:border-army-accent transition active:scale-95 text-center">
-            <div class="font-bold text-white">365 дн.</div>
-            <div>Дембель 🏠</div>
+          <button type="button" onclick="setSimDay(365)" id="stage-5" class="p-1 sm:p-2 rounded bg-army-950 border border-army-700 hover:border-army-accent transition">
+            <b class="text-white block">365</b><span>Дембель</span>
           </button>
         </div>
       </div>
     </section>
 
     <!-- ========================================================= -->
-    <!-- БЛОК 3: ЖИЗНЕННЫЕ И ГЕОГРАФИЧЕСКИЕ ЭКВИВАЛЕНТЫ            -->
+    <!-- 3. ЭКВИВАЛЕНТЫ (КОМПАКТНАЯ СВАЙП-КАРУСЕЛЬ НА МОБИЛКАХ)    -->
     <!-- ========================================================= -->
-    <section class="bg-army-900/90 border border-army-700 rounded-2xl p-4 sm:p-8 shadow-2xl space-y-5 sm:space-y-6">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-army-800 pb-4">
+    <section class="bg-army-900/90 border border-army-700/80 rounded-2xl p-4 sm:p-6 shadow-xl space-y-3.5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-army-800 pb-3">
         <div>
-          <h2 class="font-display text-lg sm:text-2xl font-bold text-white uppercase tracking-wide">
-            🌍 ВЫСЛУГА ЯРОСЛАВА В ЭКВИВАЛЕНТАХ
-          </h2>
-          <p class="text-xs text-gray-400 mt-1">
-            Что означают прошедшие дни службы в масштабах географии, космоса и обычной жизни
-          </p>
+          <div class="flex items-center space-x-1.5">
+            <span class="text-lg">🌍</span>
+            <h2 class="font-display text-base sm:text-xl font-bold text-white uppercase">ВЫСЛУГА В ЭКВИВАЛЕНТАХ</h2>
+          </div>
+          <p class="text-[10px] text-gray-400">Листайте карточки свайпом влево-вправо 👈👉</p>
         </div>
 
         <!-- Переключатель дней -->
-        <div class="bg-army-950 border border-army-700 rounded-xl p-3 flex flex-col space-y-2 min-w-full md:min-w-[280px]">
-          <div class="flex items-center justify-between text-xs font-mono">
-            <span class="text-gray-400">Расчёт на день службы:</span>
-            <span id="sim-day-badge" class="bg-army-accent text-black font-bold px-2 py-0.5 rounded text-[11px]">Реальный</span>
-          </div>
-          <input 
-            type="range" 
-            id="sim-day-slider" 
-            min="0" 
-            max="365" 
-            value="0" 
-            class="w-full cursor-pointer h-2 bg-army-800 rounded-lg"
-          >
-          <div class="flex justify-between gap-1.5">
-            <button type="button" onclick="setSimDay(54)" class="text-[10px] font-mono bg-army-800 hover:bg-army-700 text-army-accent px-2 py-1 rounded border border-army-600 transition flex-1 text-center">
-              54-й день
-            </button>
-            <button type="button" onclick="setSimDay(182)" class="text-[10px] font-mono bg-army-800 hover:bg-army-700 text-gray-200 px-2 py-1 rounded border border-army-600 transition flex-1 text-center">
-              Экватор (182)
-            </button>
-            <button type="button" onclick="setSimDay('real')" class="text-[10px] font-mono bg-army-800 hover:bg-army-700 text-army-green font-bold px-2 py-1 rounded border border-army-600 transition flex-1 text-center">
-              Сейчас
-            </button>
-          </div>
+        <div class="bg-army-950 border border-army-800 p-2 rounded-xl flex items-center space-x-2 shrink-0">
+          <span class="text-[10px] font-mono text-gray-400">День:</span>
+          <span id="sim-day-badge" class="bg-army-accent text-black font-bold px-1.5 py-0.5 rounded text-[10px]">Реальный</span>
+          <button type="button" onclick="setSimDay(54)" class="text-[9px] font-mono bg-army-800 text-army-accent px-1.5 py-0.5 rounded border border-army-600">54 дн.</button>
+          <button type="button" onclick="setSimDay(182)" class="text-[9px] font-mono bg-army-800 text-gray-300 px-1.5 py-0.5 rounded border border-army-600">Экватор</button>
+          <button type="button" onclick="setSimDay('real')" class="text-[9px] font-mono bg-army-800 text-army-green px-1.5 py-0.5 rounded border border-army-600">Сейчас</button>
         </div>
       </div>
 
-      <!-- Сетка 6 карточек эквивалентов -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+      <!-- Ползунок -->
+      <div class="px-1">
+        <input 
+          type="range" 
+          id="sim-day-slider" 
+          min="0" 
+          max="365" 
+          value="0" 
+          class="w-full cursor-pointer h-1.5 bg-army-800 rounded-lg"
+        >
+      </div>
+
+      <!-- Горизонтальная прокрутка на мобилках (не простыня!) -->
+      <div class="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 pt-1 no-scrollbar sm:grid sm:grid-cols-2 md:grid-cols-3 sm:overflow-visible">
         
         <!-- Карточка 1: Нью-Йорк -->
-        <div class="bg-army-950 border border-army-800 hover:border-army-600 rounded-xl p-4 sm:p-5 transition flex flex-col justify-between">
+        <div class="w-[82vw] sm:w-auto shrink-0 snap-center bg-army-950 border border-army-800 rounded-xl p-3.5 flex flex-col justify-between shadow-md">
           <div>
-            <div class="flex items-center justify-between mb-2.5">
-              <span class="text-2xl">🗽</span>
-              <span class="font-mono text-[9px] text-army-accent uppercase bg-army-900 px-2 py-0.5 rounded border border-army-800">География и шаг</span>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xl">🗽</span>
+              <span class="font-mono text-[8px] text-army-accent bg-army-900 px-2 py-0.5 rounded border border-army-800 uppercase">География</span>
             </div>
-            <h3 class="font-display font-bold text-white text-base mb-1.5">Пешком через мегаполисы</h3>
-            <p id="eq-ny-text" class="text-xs sm:text-sm text-gray-300 leading-relaxed">...</p>
+            <h3 class="font-display font-bold text-white text-sm mb-1">Манхэттен и Красная площадь</h3>
+            <p id="eq-ny-text" class="text-[11px] text-gray-300 leading-relaxed">...</p>
           </div>
-          <div class="mt-4 pt-2.5 border-t border-army-900 font-mono text-[11px] text-army-accent" id="eq-ny-stat">Дистанция: ~0 км</div>
+          <div class="mt-2.5 pt-2 border-t border-army-900 font-mono text-[10px] text-army-accent" id="eq-ny-stat">Дистанция: ~0 км</div>
         </div>
 
-        <!-- Карточка 2: Марш-бросок -->
-        <div class="bg-army-950 border border-army-800 hover:border-army-600 rounded-xl p-4 sm:p-5 transition flex flex-col justify-between">
+        <!-- Карточка 2: Маршрут -->
+        <div class="w-[82vw] sm:w-auto shrink-0 snap-center bg-army-950 border border-army-800 rounded-xl p-3.5 flex flex-col justify-between shadow-md">
           <div>
-            <div class="flex items-center justify-between mb-2.5">
-              <span class="text-2xl">🧭</span>
-              <span class="font-mono text-[9px] text-army-green uppercase bg-army-900 px-2 py-0.5 rounded border border-army-800">Маршрут на карте</span>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xl">🧭</span>
+              <span class="font-mono text-[8px] text-army-green bg-army-900 px-2 py-0.5 rounded border border-army-800 uppercase">Маршрут</span>
             </div>
-            <h3 class="font-display font-bold text-white text-base mb-1.5">Большой путь по стране</h3>
-            <p id="eq-route-text" class="text-xs sm:text-sm text-gray-300 leading-relaxed">...</p>
+            <h3 class="font-display font-bold text-white text-sm mb-1">Большой марш по стране</h3>
+            <p id="eq-route-text" class="text-[11px] text-gray-300 leading-relaxed">...</p>
           </div>
-          <div class="mt-4 pt-2.5 border-t border-army-900 font-mono text-[11px] text-army-green" id="eq-route-stat">Точка на карте</div>
+          <div class="mt-2.5 pt-2 border-t border-army-900 font-mono text-[10px] text-army-green" id="eq-route-stat">Точка на карте</div>
         </div>
 
-        <!-- Карточка 3: Дом и семья -->
-        <div class="bg-army-950 border border-army-800 hover:border-army-600 rounded-xl p-4 sm:p-5 transition flex flex-col justify-between">
+        <!-- Карточка 3: Дом -->
+        <div class="w-[82vw] sm:w-auto shrink-0 snap-center bg-army-950 border border-army-800 rounded-xl p-3.5 flex flex-col justify-between shadow-md">
           <div>
-            <div class="flex items-center justify-between mb-2.5">
-              <span class="text-2xl">☕</span>
-              <span class="font-mono text-[9px] text-amber-400 uppercase bg-army-900 px-2 py-0.5 rounded border border-army-800">Дом и семья</span>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xl">☕</span>
+              <span class="font-mono text-[8px] text-amber-400 bg-army-900 px-2 py-0.5 rounded border border-army-800 uppercase">Дом</span>
             </div>
-            <h3 class="font-display font-bold text-white text-base mb-1.5">Домашний счётчик заботы</h3>
-            <p id="eq-home-text" class="text-xs sm:text-sm text-gray-300 leading-relaxed">...</p>
+            <h3 class="font-display font-bold text-white text-sm mb-1">Домашний счётчик заботы</h3>
+            <p id="eq-home-text" class="text-[11px] text-gray-300 leading-relaxed">...</p>
           </div>
-          <div class="mt-4 pt-2.5 border-t border-army-900 font-mono text-[11px] text-amber-400" id="eq-home-stat">Ждём дома</div>
+          <div class="mt-2.5 pt-2 border-t border-army-900 font-mono text-[10px] text-amber-400" id="eq-home-stat">Ждём дома</div>
         </div>
 
         <!-- Карточка 4: Космос -->
-        <div class="bg-army-950 border border-army-800 hover:border-army-600 rounded-xl p-4 sm:p-5 transition flex flex-col justify-between">
+        <div class="w-[82vw] sm:w-auto shrink-0 snap-center bg-army-950 border border-army-800 rounded-xl p-3.5 flex flex-col justify-between shadow-md">
           <div>
-            <div class="flex items-center justify-between mb-2.5">
-              <span class="text-2xl">🛰️</span>
-              <span class="font-mono text-[9px] text-sky-400 uppercase bg-army-900 px-2 py-0.5 rounded border border-army-800">Орбита Земли</span>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xl">🛰️</span>
+              <span class="font-mono text-[8px] text-sky-400 bg-army-900 px-2 py-0.5 rounded border border-army-800 uppercase">Космос</span>
             </div>
-            <h3 class="font-display font-bold text-white text-base mb-1.5">Космическое движение</h3>
-            <p id="eq-space-text" class="text-xs sm:text-sm text-gray-300 leading-relaxed">...</p>
+            <h3 class="font-display font-bold text-white text-sm mb-1">Орбита Земли</h3>
+            <p id="eq-space-text" class="text-[11px] text-gray-300 leading-relaxed">...</p>
           </div>
-          <div class="mt-4 pt-2.5 border-t border-army-900 font-mono text-[11px] text-sky-400" id="eq-space-stat">Полёт вокруг Солнца</div>
+          <div class="mt-2.5 pt-2 border-t border-army-900 font-mono text-[10px] text-sky-400" id="eq-space-stat">Полёт Земли</div>
         </div>
 
-        <!-- Карточка 5: Армейский устав -->
-        <div class="bg-army-950 border border-army-800 hover:border-army-600 rounded-xl p-4 sm:p-5 transition flex flex-col justify-between">
+        <!-- Карточка 5: Устав -->
+        <div class="w-[82vw] sm:w-auto shrink-0 snap-center bg-army-950 border border-army-800 rounded-xl p-3.5 flex flex-col justify-between shadow-md">
           <div>
-            <div class="flex items-center justify-between mb-2.5">
-              <span class="text-2xl">🫡</span>
-              <span class="font-mono text-[9px] text-army-accent uppercase bg-army-900 px-2 py-0.5 rounded border border-army-800">Армейский устав</span>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xl">🫡</span>
+              <span class="font-mono text-[8px] text-army-accent bg-army-900 px-2 py-0.5 rounded border border-army-800 uppercase">Устав</span>
             </div>
-            <h3 class="font-display font-bold text-white text-base mb-1.5">Дисциплина и режим</h3>
-            <p id="eq-army-text" class="text-xs sm:text-sm text-gray-300 leading-relaxed">...</p>
+            <h3 class="font-display font-bold text-white text-sm mb-1">Распорядок дня</h3>
+            <p id="eq-army-text" class="text-[11px] text-gray-300 leading-relaxed">...</p>
           </div>
-          <div class="mt-4 pt-2.5 border-t border-army-900 font-mono text-[11px] text-army-accent" id="eq-army-stat">Служба по распорядку</div>
+          <div class="mt-2.5 pt-2 border-t border-army-900 font-mono text-[10px] text-army-accent" id="eq-army-stat">Служба по уставу</div>
         </div>
 
-        <!-- Карточка 6: Кино и культура -->
-        <div class="bg-army-950 border border-army-800 hover:border-army-600 rounded-xl p-4 sm:p-5 transition flex flex-col justify-between">
+        <!-- Карточка 6: Культура -->
+        <div class="w-[82vw] sm:w-auto shrink-0 snap-center bg-army-950 border border-army-800 rounded-xl p-3.5 flex flex-col justify-between shadow-md">
           <div>
-            <div class="flex items-center justify-between mb-2.5">
-              <span class="text-2xl">🎬</span>
-              <span class="font-mono text-[9px] text-purple-400 uppercase bg-army-900 px-2 py-0.5 rounded border border-army-800">Масштаб времени</span>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xl">🎬</span>
+              <span class="font-mono text-[8px] text-purple-400 bg-army-900 px-2 py-0.5 rounded border border-army-800 uppercase">Культура</span>
             </div>
-            <h3 class="font-display font-bold text-white text-base mb-1.5">Кино и музыка</h3>
-            <p id="eq-culture-text" class="text-xs sm:text-sm text-gray-300 leading-relaxed">...</p>
+            <h3 class="font-display font-bold text-white text-sm mb-1">Кино и музыка</h3>
+            <p id="eq-culture-text" class="text-[11px] text-gray-300 leading-relaxed">...</p>
           </div>
-          <div class="mt-4 pt-2.5 border-t border-army-900 font-mono text-[11px] text-purple-400" id="eq-culture-stat">Хронометраж выслуги</div>
+          <div class="mt-2.5 pt-2 border-t border-army-900 font-mono text-[10px] text-purple-400" id="eq-culture-stat">Хронометраж</div>
         </div>
 
       </div>
     </section>
 
     <!-- ========================================================= -->
-    <!-- БЛОК 4: СТЕНА НАПУТСТВИЙ (ПОДКЛЮЧЕНА К FIREBASE)          -->
+    <!-- 4. СТЕНА НАПУТСТВИЙ (С КОМПАКТНЫМ СКРОЛЛОМ ЗАПИСЕЙ)       -->
     <!-- ========================================================= -->
-    <section id="wishes-section" class="bg-army-900/90 border border-army-700 rounded-2xl p-4 sm:p-8 shadow-2xl space-y-5 sm:space-y-6">
-      <div class="border-b border-army-800 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+    <section id="wishes-section" class="bg-army-900/90 border border-army-700/80 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+      <div class="border-b border-army-800 pb-3 flex items-center justify-between">
         <div>
-          <h2 class="font-display text-lg sm:text-2xl font-bold text-white uppercase tracking-wide">
-            ✉️ СТЕНА НАПУТСТВИЙ И ДОБРЫХ СЛОВ ЯРОСЛАВУ
+          <h2 class="font-display text-base sm:text-xl font-bold text-white uppercase">
+            ✉️ СТЕНА НАПУТСТВИЙ ЯРОСЛАВУ
           </h2>
-          <p class="text-xs text-gray-400 mt-1">
-            Оставьте пожелание или привет из дома. Все записи сохраняются на весь год службы — когда Ярик вернётся или выйдет на связь, он прочитает каждое слово!
-          </p>
+          <p class="text-[10px] text-gray-400">Напишите добрые слова — они сохраняются на весь год!</p>
         </div>
-        <div class="flex items-center space-x-2 text-xs font-mono text-army-green bg-army-950 px-3 py-1.5 rounded-lg border border-army-800 self-start">
-          <span class="w-2 h-2 rounded-full bg-army-green animate-pulse"></span>
-          <span>Записей на стене: <strong id="wishes-count">0</strong></span>
+        <div class="flex items-center space-x-1.5 text-[10px] font-mono text-army-green bg-army-950 px-2 py-1 rounded border border-army-800 shrink-0">
+          <span class="w-1.5 h-1.5 rounded-full bg-army-green animate-pulse"></span>
+          <span>Записей: <strong id="wishes-count">0</strong></span>
         </div>
       </div>
 
-      <!-- Форма отправки -->
-      <form id="wish-form" class="bg-army-950 border border-army-700 rounded-xl p-4 sm:p-6 space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+      <!-- Форма -->
+      <form id="wish-form" class="bg-army-950 border border-army-800 rounded-xl p-3 sm:p-5 space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
-            <label for="wish-author" class="block text-xs font-mono uppercase text-gray-400 mb-1.5">Ваше имя / Кто вы для Ярика *</label>
+            <label for="wish-author" class="block text-[10px] font-mono uppercase text-gray-400 mb-1">Кто пишет бойцу *</label>
             <input 
               type="text" 
               id="wish-author" 
               required
               maxlength="50"
-              placeholder="Например: Мама, Папа, Бабушка, Друзья..." 
-              class="w-full bg-army-900 border border-army-700 focus:border-army-accent rounded-lg py-2.5 px-3.5 text-white placeholder:text-gray-600 focus:outline-none transition"
+              placeholder="Мама, Папа, Бабушка, Друзья..." 
+              class="w-full bg-army-900 border border-army-700 focus:border-army-accent rounded-lg py-2 px-3 text-white placeholder:text-gray-600 focus:outline-none transition text-xs"
             >
           </div>
           <div>
-            <label for="wish-tag" class="block text-xs font-mono uppercase text-gray-400 mb-1.5">Значок сообщения</label>
+            <label for="wish-tag" class="block text-[10px] font-mono uppercase text-gray-400 mb-1">Значок</label>
             <select 
               id="wish-tag" 
-              class="w-full bg-army-900 border border-army-700 focus:border-army-accent rounded-lg py-2.5 px-3.5 text-white focus:outline-none transition"
+              class="w-full bg-army-900 border border-army-700 focus:border-army-accent rounded-lg py-2 px-3 text-white focus:outline-none transition text-xs"
             >
               <option value="❤️ Родной дом">❤️ Родной дом и семья</option>
               <option value="🫡 Гордимся и ждём">🫡 Гордимся и ждём</option>
               <option value="🤝 Крепкая дружба">🤝 Братва и друзья</option>
-              <option value="🔥 Легкой службы">🔥 Лёгких берцев и быстрой службы</option>
+              <option value="🔥 Легкой службы">🔥 Лёгких берцев</option>
             </select>
           </div>
         </div>
 
         <div>
-          <label for="wish-message" class="block text-xs font-mono uppercase text-gray-400 mb-1.5">Ваше пожелание Ярославу *</label>
+          <label for="wish-message" class="block text-[10px] font-mono uppercase text-gray-400 mb-1">Слова напутствия *</label>
           <textarea 
             id="wish-message" 
-            rows="3" 
+            rows="2" 
             required
             maxlength="1000"
-            placeholder="Напишите тёплые слова поддержки, которые согреют Ярика..." 
-            class="w-full bg-army-900 border border-army-700 focus:border-army-accent rounded-lg py-2.5 px-3.5 text-white placeholder:text-gray-600 focus:outline-none transition resize-y"
+            placeholder="Напишите тёплые слова поддержки..." 
+            class="w-full bg-army-900 border border-army-700 focus:border-army-accent rounded-lg py-2 px-3 text-white placeholder:text-gray-600 focus:outline-none transition resize-none text-xs"
           ></textarea>
         </div>
 
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-          <span id="wish-status-msg" class="text-xs font-mono text-gray-500">
-            Запись сразу появится на стене у всех родственников
+        <div class="flex items-center justify-between pt-1">
+          <span id="wish-status-msg" class="text-[10px] font-mono text-gray-500 truncate mr-2">
+            Запись сразу увидят все близкие
           </span>
           <button 
             type="submit" 
             id="wish-submit-btn"
-            class="bg-army-accent hover:bg-amber-400 text-black font-display font-bold py-3 px-6 rounded-xl uppercase tracking-wider text-sm transition transform active:scale-95 shadow-lg flex items-center justify-center space-x-2"
+            class="bg-army-accent hover:bg-amber-400 text-black font-display font-bold py-2.5 px-4 rounded-xl uppercase tracking-wider text-xs transition active:scale-95 shadow shrink-0"
           >
-            <span>ОТПРАВИТЬ НА СТЕНУ</span>
-            <span>✉️</span>
+            ОТПРАВИТЬ ✉️
           </button>
         </div>
       </form>
 
-      <!-- Список пожеланий -->
-      <div id="wishes-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 pt-2">
-        <!-- Пожелания генерируются автоматически -->
+      <!-- Контейнер карточек с аккуратной высотой (не простыня!) -->
+      <div id="wishes-list" class="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+        <!-- Пожелания -->
       </div>
     </section>
 
   </main>
 
   <!-- Футер -->
-  <footer class="border-t border-army-800 bg-army-950/90 py-5 mt-10">
-    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-gray-500">
-      <div>
-        YAROSLAVBUDANOV.RU • Новобранец Буданов Ярослав Артурович (2026–2027)
-      </div>
+  <footer class="border-t border-army-800 bg-army-950 py-4 mt-6">
+    <div class="max-w-4xl mx-auto px-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] font-mono text-gray-500 text-center sm:text-left">
+      <div>YAROSLAVBUDANOV.RU • Буданов Ярослав Артурович (2026–2027)</div>
       <button 
         type="button" 
         onclick="lockKppAgain()" 
         class="text-gray-400 hover:text-army-accent underline decoration-dotted transition"
       >
-        🚧 Закрыть шлагбаум (проверить КПП снова)
+        🚧 Закрыть шлагбаум (проверить КПП)
       </button>
     </div>
   </footer>
 
   <!-- ========================================================= -->
-  <!-- СКРИПТЫ: СИНТЕЗАТОР ЗВУКА, ТАЙМЕРЫ И БАЗА FIREBASE        -->
+  <!-- СКРИПТЫ                                                   -->
   <!-- ========================================================= -->
   <script>
-    /* ---------------------------------------------------------
-       1. ЗВУКОВОЙ СИНТЕЗАТОР КПП (Web Audio API)
-    --------------------------------------------------------- */
     let audioCtx = null;
     function getAudioCtx() {
       if (!audioCtx) {
@@ -627,64 +571,50 @@
         const now = ctx.currentTime;
 
         if (type === 'error') {
-          [0, 0.18].forEach(offset => {
+          [0, 0.16].forEach(offset => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(135, now + offset);
             gain.gain.setValueAtTime(0.18, now + offset);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.14);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.12);
             osc.connect(gain);
             gain.connect(ctx.destination);
             osc.start(now + offset);
-            osc.stop(now + offset + 0.15);
+            osc.stop(now + offset + 0.14);
           });
         } else if (type === 'open') {
           [587.33, 880].forEach((freq, idx) => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.type = 'triangle';
-            osc.frequency.setValueAtTime(freq, now + idx * 0.12);
-            gain.gain.setValueAtTime(0.2, now + idx * 0.12);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.18);
+            osc.frequency.setValueAtTime(freq, now + idx * 0.11);
+            gain.gain.setValueAtTime(0.2, now + idx * 0.11);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.11 + 0.16);
             osc.connect(gain);
             gain.connect(ctx.destination);
-            osc.start(now + idx * 0.12);
-            osc.stop(now + idx * 0.12 + 0.2);
+            osc.start(now + idx * 0.11);
+            osc.stop(now + idx * 0.11 + 0.18);
           });
 
           const motorOsc = ctx.createOscillator();
           const motorGain = ctx.createGain();
           motorOsc.type = 'sawtooth';
-          motorOsc.frequency.setValueAtTime(75, now + 0.25);
-          motorOsc.frequency.linearRampToValueAtTime(142, now + 1.45);
-          motorGain.gain.setValueAtTime(0.01, now + 0.25);
-          motorGain.gain.linearRampToValueAtTime(0.12, now + 0.4);
-          motorGain.gain.exponentialRampToValueAtTime(0.001, now + 1.55);
+          motorOsc.frequency.setValueAtTime(75, now + 0.22);
+          motorOsc.frequency.linearRampToValueAtTime(142, now + 1.4);
+          motorGain.gain.setValueAtTime(0.01, now + 0.22);
+          motorGain.gain.linearRampToValueAtTime(0.12, now + 0.35);
+          motorGain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
           motorOsc.connect(motorGain);
           motorGain.connect(ctx.destination);
-          motorOsc.start(now + 0.25);
-          motorOsc.stop(now + 1.6);
-
-          const clickOsc = ctx.createOscillator();
-          const clickGain = ctx.createGain();
-          clickOsc.type = 'square';
-          clickOsc.frequency.setValueAtTime(420, now + 1.5);
-          clickGain.gain.setValueAtTime(0.15, now + 1.5);
-          clickGain.gain.exponentialRampToValueAtTime(0.001, now + 1.58);
-          clickOsc.connect(clickGain);
-          clickGain.connect(ctx.destination);
-          clickOsc.start(now + 1.5);
-          clickOsc.stop(now + 1.6);
+          motorOsc.start(now + 0.22);
+          motorOsc.stop(now + 1.55);
         }
       } catch (e) {}
     }
 
-    /* ---------------------------------------------------------
-       2. ЛОГИКА КПП (ПАРОЛЬ 08102004)
-    --------------------------------------------------------- */
     const KPP_SECRET = '08102004';
-    const KPP_STORAGE_KEY = 'yaroslav_kpp_unlocked_v2';
+    const KPP_STORAGE_KEY = 'yaroslav_kpp_unlocked_v3';
 
     const kppOverlay = document.getElementById('kpp-overlay');
     const kppForm = document.getElementById('kpp-form');
@@ -709,9 +639,9 @@
         kppError.classList.add('hidden');
         playKppSound('open');
 
-        lightRed.className = 'w-3.5 h-3.5 rounded-full bg-army-700 transition-all duration-300';
-        lightGreen.className = 'w-3.5 h-3.5 rounded-full bg-army-green shadow-[0_0_16px_#10b981] transition-all duration-300';
-        axleDot.className = 'w-2.5 h-2.5 rounded-full bg-army-green';
+        lightRed.className = 'w-3 h-3 rounded-full bg-army-700 transition-all';
+        lightGreen.className = 'w-3 h-3 rounded-full bg-army-green shadow-[0_0_14px_#10b981] transition-all';
+        axleDot.className = 'w-2 h-2 rounded-full bg-army-green';
         statusText.textContent = 'ПРОПУСК ПРИНЯТ • ПУТЬ ОТКРЫТ';
         statusText.classList.replace('text-gray-300', 'text-army-green');
 
@@ -721,7 +651,7 @@
         setTimeout(() => {
           kppOverlay.classList.add('opacity-0', 'pointer-events-none');
           setTimeout(() => kppOverlay.classList.add('hidden'), 700);
-        }, 1500);
+        }, 1450);
       } else {
         playKppSound('error');
         kppError.classList.remove('hidden');
@@ -736,10 +666,10 @@
     function lockKppAgain() {
       localStorage.removeItem(KPP_STORAGE_KEY);
       barrierArm.classList.remove('open');
-      lightRed.className = 'w-3.5 h-3.5 rounded-full bg-army-red shadow-[0_0_14px_#ef4444] transition-all duration-300';
-      lightGreen.className = 'w-3.5 h-3.5 rounded-full bg-army-700 transition-all duration-300';
-      axleDot.className = 'w-2.5 h-2.5 rounded-full bg-army-red animate-pulse';
-      statusText.textContent = 'КПП ЗАКРЫТО • ОСОБЫЙ РЕЖИМ';
+      lightRed.className = 'w-3 h-3 rounded-full bg-army-red shadow-[0_0_12px_#ef4444] transition-all';
+      lightGreen.className = 'w-3 h-3 rounded-full bg-army-700 transition-all';
+      axleDot.className = 'w-2 h-2 rounded-full bg-army-red animate-pulse';
+      statusText.textContent = 'КПП ЗАКРЫТО • РЕЖИМ';
       statusText.classList.replace('text-army-green', 'text-gray-300');
       kppInput.value = '';
       kppOverlay.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
@@ -757,13 +687,10 @@
           }, 2000);
         });
       } else {
-        alert('Ссылка на сайт: ' + url);
+        alert('Ссылка: ' + url);
       }
     }
 
-    /* ---------------------------------------------------------
-       3. ТАЙМЕРЫ И ЭКВИВАЛЕНТЫ
-    --------------------------------------------------------- */
     const START_DATE = new Date(2026, 9, 26, 6, 0, 0).getTime();
     const END_DATE   = new Date(2027, 9, 26, 6, 0, 0).getTime();
     const TOTAL_MS   = END_DATE - START_DATE;
@@ -775,7 +702,7 @@
 
     sliderEl.addEventListener('input', function() {
       simulatedDays = parseFloat(this.value);
-      simBadgeEl.textContent = simulatedDays + ' дн. (просмотр)';
+      simBadgeEl.textContent = simulatedDays + ' дн.';
       updateEquivalents(simulatedDays);
     });
 
@@ -787,12 +714,8 @@
       } else {
         simulatedDays = Number(val);
         sliderEl.value = simulatedDays;
-        simBadgeEl.textContent = simulatedDays + ' дн. (пример)';
+        simBadgeEl.textContent = simulatedDays + ' дн.';
         updateEquivalents(simulatedDays);
-        const eqSection = document.getElementById('sim-day-slider');
-        if (eqSection) {
-          eqSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
       }
     }
 
@@ -800,67 +723,61 @@
       const d = Math.max(0, daysVal);
       const displayDays = d < 1 && d > 0 ? d.toFixed(1) : Math.round(d);
 
-      // 1. Нью-Йорк
       const kmWalked = (d * 15.5).toFixed(1);
       const nyWalks = ((d * 15.5) / 21.6).toFixed(1);
       const redSquareWalks = Math.round((d * 15.5) / 0.33);
       document.getElementById('eq-ny-text').innerHTML = 
         d <= 0.05
-          ? `Как только начнётся служба, здесь появится расчёт шагов. Нажмите любую кнопку выше (например, <b>54-й день</b>), чтобы посмотреть пример!`
-          : `За <b>${displayDays} дн.</b> в армейском ритме Ярослав намотает около <b>${kmWalked} км</b>. За это время можно было пройти весь Манхэттен (Нью-Йорк) <b>${nyWalks} раза</b> или обойти Красную площадь <b>${redSquareWalks.toLocaleString('ru-RU')} раз</b>!`;
-      document.getElementById('eq-ny-stat').textContent = `Пройдено пешком: ~${kmWalked} км`;
+          ? `Как только начнётся служба, здесь появится расчёт шагов. Нажмите кнопку <b>54 дн.</b> выше для примера!`
+          : `За <b>${displayDays} дн.</b> пройдено около <b>${kmWalked} км</b> — это весь Манхэттен (Нью-Йорк) <b>${nyWalks} раз</b> или Красная площадь <b>${redSquareWalks.toLocaleString('ru-RU')} раз</b>!`;
+      document.getElementById('eq-ny-stat').textContent = `Пройдено: ~${kmWalked} км`;
 
-      // 2. Маршрут
       let routeComparison = 'выход за пределы родного города';
       const kmNum = parseFloat(kmWalked);
-      if (kmNum >= 4500) routeComparison = 'путь от Москвы через всю Сибирь до самого Байкала!';
+      if (kmNum >= 4500) routeComparison = 'путь от Москвы через Сибирь до самого Байкала!';
       else if (kmNum >= 2500) routeComparison = 'расстояние от Москвы до Ташкента!';
-      else if (kmNum >= 1500) routeComparison = 'весь путь от Москвы до побережья Сочи!';
-      else if (kmNum >= 700) routeComparison = 'дорогу от Москвы до Санкт-Петербурга пешим строем!';
-      else if (kmNum >= 200) routeComparison = 'марш-бросок между соседними городами!';
+      else if (kmNum >= 1500) routeComparison = 'путь от Москвы до побережья Сочи!';
+      else if (kmNum >= 700) routeComparison = 'дорогу от Москвы до Питера пешком!';
+      else if (kmNum >= 200) routeComparison = 'марш-бросок между городами!';
 
       document.getElementById('eq-route-text').innerHTML =
         d <= 0.05
-          ? `С каждым днём виртуальный маршрут Ярослава будет продвигаться по карте всё дальше.`
-          : `Если вытянуть все шаги Ярослава за <b>${displayDays} дн.</b> в одну прямую линию, он бы уже преодолел <b>${routeComparison}</b>`;
-      document.getElementById('eq-route-stat').textContent = `Масштаб: ${((kmNum / 5665) * 100).toFixed(1)}% годового марша`;
+          ? `Виртуальный маршрут шагов Ярослава будет продвигаться по карте с каждым днём.`
+          : `Все шаги Ярослава за <b>${displayDays} дн.</b> равны: <b>${routeComparison}</b>`;
+      document.getElementById('eq-route-stat').textContent = `Маршрут: ${((kmNum / 5665) * 100).toFixed(1)}% годового пути`;
 
-      // 3. Дом
       const teaCups = Math.round(d * 3.5);
       const homeDinners = Math.round(d * 2);
       const alarmsSkipped = Math.round(d);
       document.getElementById('eq-home-text').innerHTML =
         d <= 0.05
-          ? `Дома уже заваривают чай и готовят любимые блюда к возвращению бойца.`
-          : `За <b>${displayDays} дн.</b> дома было бы выпито <b>${teaCups} кружек</b> чая, съедено <b>${homeDinners} порций</b> домашнего ужина и пропущено <b>${alarmsSkipped} гражданских будильников</b>.`;
-      document.getElementById('eq-home-stat').textContent = `Накоплено домашних чаепитий: ${teaCups}`;
+          ? `Дома уже ждут и готовят любимые блюда к возвращению бойца.`
+          : `Дома за <b>${displayDays} дн.</b> было бы выпито <b>${teaCups} кружек</b> чая, съедено <b>${homeDinners} ужинов</b> и пропущено <b>${alarmsSkipped} будильников</b>.`;
+      document.getElementById('eq-home-stat').textContent = `Домашних чаепитий: ${teaCups}`;
 
-      // 4. Космос
       const earthMillionKm = (d * 2.575).toFixed(1);
       const issOrbits = Math.round(d * 15.5);
       document.getElementById('eq-space-text').innerHTML =
         d <= 0.05
           ? `Земля начинает свой годовой виток вокруг Солнца вместе со службой Ярослава.`
-          : `Пока Ярослав служит <b>${displayDays} дн.</b>, планета Земля пролетела по орбите вокруг Солнца <b>${earthMillionKm} млн км</b>, а МКС облетела Землю <b>${issOrbits.toLocaleString('ru-RU')} раз</b>!`;
-      document.getElementById('eq-space-stat').textContent = `Полёт Земли: ${earthMillionKm} млн км`;
+          : `За <b>${displayDays} дн.</b> Земля пролетела по орбите <b>${earthMillionKm} млн км</b>, а МКС облетела планету <b>${issOrbits.toLocaleString('ru-RU')} раз</b>!`;
+      document.getElementById('eq-space-stat').textContent = `Земля: ${earthMillionKm} млн км`;
 
-      // 5. Устав
       const wakeUps = Math.floor(d);
       const rations = Math.round(d * 3);
       const hoursServed = Math.round(d * 24);
       document.getElementById('eq-army-text').innerHTML =
         d <= 0.05
-          ? `Форма подготовлена, впереди первая команда «Рота, подъём!» и присяга.`
-          : `Позади уже <b>${hoursServed.toLocaleString('ru-RU')} часов</b> выслуги, <b>${wakeUps}</b> подъёмов в 06:00, столько же заправленных коек и <b>${rations}</b> приёмов пищи!`;
-      document.getElementById('eq-army-stat').textContent = `Часов в строю: ${hoursServed.toLocaleString('ru-RU')} ч.`;
+          ? `Форма готова, впереди первая команда «Рота, подъём!» и присяга.`
+          : `Позади <b>${hoursServed.toLocaleString('ru-RU')} ч.</b> выслуги, <b>${wakeUps}</b> подъёмов в 06:00, заправленных коек и <b>${rations}</b> приёмов пищи!`;
+      document.getElementById('eq-army-stat').textContent = `В строю: ${hoursServed.toLocaleString('ru-RU')} ч.`;
 
-      // 6. Кино и культура (исправлена заглушка)
       const moviesCount = Math.round((d * 24) / 2.2);
       const songsCount = Math.round((d * 24 * 60) / 3.2);
       document.getElementById('eq-culture-text').innerHTML =
         d <= 0.05
-          ? `Целый год — это сотни историй и треков, которые мы обязательно обсудим и послушаем при встрече на дембеле.`
-          : `За время службы (<b>${displayDays} дн.</b>) можно было без перерыва посмотреть <b>${moviesCount.toLocaleString('ru-RU')} фильмов</b> или прослушать <b>${songsCount.toLocaleString('ru-RU')} любимых треков</b>!`;
+          ? `Сотни историй и треков, которые мы обязательно обсудим при встрече!`
+          : `За <b>${displayDays} дн.</b> можно было посмотреть <b>${moviesCount.toLocaleString('ru-RU')} фильмов</b> или прослушать <b>${songsCount.toLocaleString('ru-RU')} треков</b>!`;
       document.getElementById('eq-culture-stat').textContent = `Эквивалент: ${moviesCount} фильмов`;
     }
 
@@ -876,18 +793,18 @@
         const toStartMs = START_DATE - now;
         const hrsToStart = Math.floor(toStartMs / (1000 * 60 * 60));
         const minsToStart = Math.floor((toStartMs % (1000 * 60 * 60)) / (1000 * 60));
-        document.getElementById('service-phase-badge').textContent = `Отправка 26 октября (через ${hrsToStart} ч. ${minsToStart} мин.)`;
-        document.getElementById('countdown-subtitle').textContent = 'Отсчёт начнется 26 октября 2026 в 06:00';
+        document.getElementById('service-phase-badge').textContent = `Отправка (через ${hrsToStart} ч. ${minsToStart} м.)`;
+        document.getElementById('countdown-subtitle').textContent = 'Отсчёт начнется 26 октября в 06:00';
         elapsedMs = 0;
         remainingMs = TOTAL_MS;
       } else if (now >= END_DATE) {
         document.getElementById('service-phase-badge').textContent = 'ДЕМБЕЛЬ! СЛУЖБА ОКОНЧЕНА 🎉';
-        document.getElementById('countdown-heading').textContent = '🎉 ЯРОСЛАВ ДОМА! С ДЕМБЕЛЕМ!';
+        document.getElementById('countdown-heading').textContent = '🎉 ЯРОСЛАВ ДОМА!';
         elapsedMs = TOTAL_MS;
         remainingMs = 0;
       } else {
-        document.getElementById('service-phase-badge').textContent = 'Статус: На боевом посту (служба Родине)';
-        document.getElementById('countdown-subtitle').textContent = 'Каждая секунда приближает возвращение Ярослава домой';
+        document.getElementById('service-phase-badge').textContent = 'На боевом посту';
+        document.getElementById('countdown-subtitle').textContent = 'Каждая секунда приближает дембель';
       }
 
       const pct = Math.min(100, Math.max(0, (elapsedMs / TOTAL_MS) * 100));
@@ -911,23 +828,22 @@
       document.getElementById('days-passed-label').textContent = daysPassedInt;
       document.getElementById('days-left-label').textContent = Math.ceil(remainingMs / (1000 * 60 * 60 * 24));
 
-      // Подсветка вех
       const stages = ['stage-1', 'stage-2', 'stage-3', 'stage-4', 'stage-5'];
       stages.forEach(id => {
         const el = document.getElementById(id);
-        el.className = 'p-2 sm:p-2.5 rounded-lg border border-army-700 bg-army-950 text-gray-300 hover:border-army-accent transition active:scale-95 text-center';
+        el.className = 'p-1 sm:p-2 rounded bg-army-950 border border-army-700 hover:border-army-accent transition';
       });
 
       let activeStage = 'stage-1';
-      let rankTitle = 'Новобранец / Дух';
-      if (daysPassedInt >= 365) { activeStage = 'stage-5'; rankTitle = 'Дембель в запасе'; }
-      else if (daysPassedInt >= 265) { activeStage = 'stage-4'; rankTitle = 'Дед (100 дней до приказа)'; }
-      else if (daysPassedInt >= 182) { activeStage = 'stage-3'; rankTitle = 'Черпак (Экватор пройден)'; }
+      let rankTitle = 'Новобранец';
+      if (daysPassedInt >= 365) { activeStage = 'stage-5'; rankTitle = 'Дембель'; }
+      else if (daysPassedInt >= 265) { activeStage = 'stage-4'; rankTitle = 'Дед'; }
+      else if (daysPassedInt >= 182) { activeStage = 'stage-3'; rankTitle = 'Черпак (Экватор)'; }
       else if (daysPassedInt >= 100) { activeStage = 'stage-2'; rankTitle = 'Слон'; }
 
       const activeEl = document.getElementById(activeStage);
       if (activeEl) {
-        activeEl.className = 'p-2 sm:p-2.5 rounded-lg border-2 border-army-accent bg-army-800 text-army-accent shadow-lg text-center font-bold';
+        activeEl.className = 'p-1 sm:p-2 rounded border border-army-accent bg-army-800 text-army-accent font-bold';
       }
       document.getElementById('soldier-rank-title').textContent = rankTitle;
 
@@ -941,9 +857,9 @@
     updateTimersAndStats();
 
     /* ---------------------------------------------------------
-       4. СТЕНА НАПУТСТВИЙ (ПОДКЛЮЧЕНИЕ К FIREBASE)
+       СТЕНА НАПУТСТВИЙ (FIREBASE)
     --------------------------------------------------------- */
-    const LOCAL_WISHES_KEY = 'yaroslav_army_wishes_backup_v2';
+    const LOCAL_WISHES_KEY = 'yaroslav_army_wishes_backup_v3';
     const wishForm = document.getElementById('wish-form');
     const wishesList = document.getElementById('wishes-list');
     const wishesCount = document.getElementById('wishes-count');
@@ -992,26 +908,26 @@
 
       if (sorted.length === 0) {
         wishesList.innerHTML = `
-          <div class="col-span-full text-center py-8 bg-army-950 border border-army-800 rounded-xl text-gray-500 font-mono text-xs">
-            На стене пока нет записей. Будьте первым, кто напишет тёплые слова Ярославу! ✉️
+          <div class="text-center py-5 bg-army-950 border border-army-800 rounded-xl text-gray-500 font-mono text-xs">
+            На стене пока нет записей. Будьте первым! ✉️
           </div>
         `;
         return;
       }
 
       wishesList.innerHTML = sorted.map(item => `
-        <article class="bg-army-950 border border-army-800 hover:border-army-600 rounded-xl p-4 sm:p-5 flex flex-col justify-between shadow-lg transition">
+        <article class="bg-army-950 border border-army-800/80 rounded-xl p-3 flex flex-col justify-between shadow transition">
           <div>
-            <div class="flex items-start justify-between gap-2 mb-2.5">
-              <div>
-                <h3 class="font-display font-bold text-white text-sm sm:text-base">${escapeHtml(item.author)}</h3>
-                <span class="font-mono text-[9px] sm:text-[10px] text-gray-500 block">${formatWishDate(item.time)}</span>
+            <div class="flex items-center justify-between gap-1 mb-1.5">
+              <div class="min-w-0">
+                <h3 class="font-display font-bold text-white text-xs sm:text-sm truncate">${escapeHtml(item.author)}</h3>
+                <span class="font-mono text-[8px] sm:text-[9px] text-gray-500 block">${formatWishDate(item.time)}</span>
               </div>
-              <span class="font-mono text-[9px] sm:text-[10px] bg-army-900 border border-army-700 text-army-accent px-2 py-0.5 rounded-full whitespace-nowrap">
+              <span class="font-mono text-[8px] sm:text-[9px] bg-army-900 border border-army-700 text-army-accent px-1.5 py-0.5 rounded-full shrink-0">
                 ${escapeHtml(item.tag || '❤️ Родной дом')}
               </span>
             </div>
-            <p class="text-xs sm:text-sm text-gray-200 leading-relaxed whitespace-pre-line break-words">${escapeHtml(item.message)}</p>
+            <p class="text-[11px] sm:text-xs text-gray-200 leading-relaxed whitespace-pre-line break-words">${escapeHtml(item.message)}</p>
           </div>
         </article>
       `).join('');
@@ -1019,7 +935,6 @@
 
     renderWishes(wishesCache);
 
-    // Подключение к Firebase
     let wishesRef = null;
     try {
       const firebaseConfig = {
@@ -1044,15 +959,11 @@
           } catch (e) {}
           renderWishes(wishesCache);
         } else {
-          // Если база чистая — отправляем стартовое приветствие
           wishesRef.push(DEFAULT_WISHES[0]);
         }
       });
-    } catch (err) {
-      console.warn('Firebase sync notice:', err);
-    }
+    } catch (err) {}
 
-    // Обработка отправки формы
     wishForm.addEventListener('submit', function(e) {
       e.preventDefault();
       const authorEl = document.getElementById('wish-author');
@@ -1074,7 +985,7 @@
       };
 
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span>ОТПРАВКА...</span>';
+      submitBtn.textContent = 'ОТПРАВКА...';
 
       wishesCache.unshift(newWish);
       try {
@@ -1084,22 +995,22 @@
 
       if (wishesRef) {
         wishesRef.push(newWish).then(() => {
-          wishStatusMsg.textContent = '✅ Напутствие успешно добавлено на стену!';
-          wishStatusMsg.className = 'text-xs font-mono text-army-green font-bold';
+          wishStatusMsg.textContent = '✅ Напутствие добавлено на стену!';
+          wishStatusMsg.className = 'text-[10px] font-mono text-army-green font-bold truncate mr-2';
         }).catch(() => {
-          wishStatusMsg.textContent = '✅ Сохранено локально! Появится у всех при обновлении.';
-          wishStatusMsg.className = 'text-xs font-mono text-army-accent';
+          wishStatusMsg.textContent = '✅ Сохранено локально!';
+          wishStatusMsg.className = 'text-[10px] font-mono text-army-accent truncate mr-2';
         }).finally(() => {
           submitBtn.disabled = false;
-          submitBtn.innerHTML = '<span>ОТПРАВИТЬ НА СТЕНУ</span><span>✉️</span>';
+          submitBtn.textContent = 'ОТПРАВИТЬ ✉️';
           msgEl.value = '';
         });
       } else {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<span>ОТПРАВИТЬ НА СТЕНУ</span><span>✉️</span>';
+        submitBtn.textContent = 'ОТПРАВИТЬ ✉️';
         msgEl.value = '';
-        wishStatusMsg.textContent = '✅ Напутствие опубликовано на стене!';
-        wishStatusMsg.className = 'text-xs font-mono text-army-green font-bold';
+        wishStatusMsg.textContent = '✅ Опубликовано!';
+        wishStatusMsg.className = 'text-[10px] font-mono text-army-green font-bold truncate mr-2';
       }
     });
   </script>
