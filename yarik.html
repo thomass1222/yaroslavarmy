@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Новобранец Буданов Ярослав Артурович — Штаб ожидания</title>
+  <meta name="description" content="Официальный штаб ожидания дембеля. Новобранец Буданов Ярослав Артурович. Счётчик службы, эквиваленты и стена напутствий.">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Firebase SDK (для безотказной работы стены напутствий в реальном времени) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- Шрифты -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            army: {
+              950: '#080a08',
+              900: '#0d110d',
+              800: '#151b15',
+              700: '#202920',
+              600: '#2f3d2f',
+              accent: '#f59e0b',
+              green: '#10b981',
+              red: '#ef4444'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+            display: ['"Chakra Petch"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #080a08;
+      color: #e5e7eb;
+      overflow-x: hidden;
+    }
+    /* Тактическая координатная сетка */
+    .bg-tactical-grid {
+      background-size: 36px 36px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    }
+    /* Полосы шлагбаума КПП */
+    .barrier-stripes {
+      background: repeating-linear-gradient(
+        -45deg,
+        #dc2626,
+        #dc2626 18px,
+        #f8fafc 18px,
+        #f8fafc 36px
+      );
+    }
+    /* Плавная физика подъема стрелы шлагбаума */
+    .barrier-arm {
+      transform-origin: 18px 50%;
+      transition: transform 1.4s cubic-bezier(0.65, 0, 0.25, 1);
+    }
+    .barrier-arm.open {
+      transform: rotate(-78deg);
+    }
+    /* Анимация ошибки пароля */
+    @keyframes shakeError {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .shake {
+      animation: shakeError 0.4s ease-in-out;
+    }
+    /* Кастомный ползунок */
+    input[type=range] {
+      accent-color: #f59e0b;
+    }
+  </style>
+</head>
+<body class="bg-tactical-grid min-h-screen flex flex-col justify-between selection:bg-army-accent selection:text-black">
+
+  <!-- ========================================================= -->
+  <!-- ЭКРАН 0: КОНТРОЛЬНО-ПРОПУСКНОЙ ПУНКТ (КПП)                -->
+  <!-- ========================================================= -->
+  <div id="kpp-overlay" class="fixed inset-0 z-50 bg-army-950/98 backdrop-blur-xl flex flex-col items-center justify-center p-4 transition-opacity duration-700">
+    
+    <!-- Верхний светофор КПП -->
+    <div class="mb-6 flex items-center space-x-3 bg-army-900 px-5 py-2.5 rounded-full border border-army-700 shadow-lg">
+      <div id="kpp-light-red" class="w-4 h-4 rounded-full bg-army-red shadow-[0_0_14px_#ef4444] transition-all duration-300"></div>
+      <div id="kpp-light-green" class="w-4 h-4 rounded-full bg-army-700 transition-all duration-300"></div>
+      <span id="kpp-status-text" class="font-mono text-xs uppercase tracking-widest text-gray-300 pl-1">КПП ЗАКРЫТО • ДОСТУП ПО ПАРОЛЮ</span>
+    </div>
+
+    <!-- Главный модуль КПП -->
+    <div id="kpp-card" class="w-full max-w-md bg-army-900 border-2 border-army-700 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+      <!-- Угловые тактические засечки -->
+      <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-army-accent"></div>
+      <div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-army-accent"></div>
+      <div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-army-accent"></div>
+      <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-army-accent"></div>
+
+      <!-- Анимированная сцена со шлагбаумом -->
+      <div class="relative w-full h-32 mb-6 bg-army-950 rounded-xl border border-army-700 flex items-end pb-5 px-5 overflow-hidden">
+        <!-- Сетка радарного фона -->
+        <div class="absolute inset-0 opacity-20 bg-tactical-grid"></div>
+
+        <!-- Будка КПП слева -->
+        <div class="relative z-20 flex flex-col items-center mr-2">
+          <div class="w-10 h-14 bg-army-800 border border-army-600 rounded-t flex flex-col items-center justify-start pt-1.5 shadow-md">
+            <div class="w-6 h-4 bg-amber-500/20 border border-amber-500/40 rounded-sm mb-1"></div>
+            <span class="text-[7px] font-mono text-army-accent font-bold">КПП</span>
+          </div>
+        </div>
+
+        <!-- Тумба и стрела шлагбаума -->
+        <div class="relative flex items-center">
+          <!-- Опорная стойка -->
+          <div class="w-7 h-12 bg-gradient-to-b from-gray-700 to-gray-900 border border-gray-500 rounded-t z-20 flex items-center justify-center shadow-lg">
+            <div id="kpp-axle-dot" class="w-2.5 h-2.5 rounded-full bg-army-red animate-pulse"></div>
+          </div>
+          <!-- Подъемная красно-белая стрела -->
+          <div id="barrier-arm" class="barrier-arm barrier-stripes h-3.5 w-60 sm:w-64 rounded-r-md shadow-xl z-10 -ml-3.5 border border-black/40"></div>
+        </div>
+
+        <!-- Табличка справа -->
+        <div class="absolute top-3 right-3 text-right">
+          <span class="text-[10px] font-mono font-bold text-army-red uppercase block tracking-wider">СТОЙ! ПРОХОД ЗАКРЫТ</span>
+          <span class="text-[9px] font-mono text-gray-500 block">Предъявите шифр бойца</span>
+        </div>
+      </div>
+
+      <div class="text-center mb-5">
+        <h1 class="font-display text-xl sm:text-2xl font-bold text-white uppercase tracking-wide">ШТАБ: ЯРОСЛАВ БУДАНОВ</h1>
+        <p class="text-xs text-gray-400 mt-1">Для поднятия шлагбаума введите дату рождения Ярослава (8 цифр без точек)</p>
+      </div>
+
+      <form id="kpp-form" class="space-y-4">
+        <div>
+          <input 
+            type="password" 
+            id="kpp-input" 
+            inputmode="numeric"
+            maxlength="8" 
+            placeholder="••••••••" 
+            autocomplete="off"
+            class="w-full bg-army-950 border-2 border-army-600 focus:border-army-accent rounded-xl py-3.5 px-4 text-center font-mono text-xl tracking-[0.4em] text-army-accent placeholder:text-gray-700 focus:outline-none transition-all"
+          >
+          <p id="kpp-error" class="hidden text-army-red text-xs font-mono text-center mt-2 font-semibold">
+            ⛔ ОТКАЗАНО В ДОСТУПЕ. ПРОВЕРЬТЕ ДАТУ РОЖДЕНИЯ (ДДММГГГГ)
+          </p>
+        </div>
+
+        <button 
+          type="submit" 
+          id="kpp-submit-btn"
+          class="w-full bg-army-accent hover:bg-amber-400 text-black font-display font-bold py-3.5 px-6 rounded-xl uppercase tracking-wider transition-all transform active:scale-95 shadow-lg shadow-amber-500/10 flex items-center justify-center space-x-2"
+        >
+          <span>ОТКРЫТЬ ШЛАГБАУМ</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </button>
+      </form>
+
+      <div class="mt-4 pt-3 border-t border-army-800 flex justify-between items-center text-[10px] font-mono text-gray-500">
+        <span>ОБЪЕКТ: YAROSLAVBUDANOV.RU</span>
+        <span>ДОПУСК: СЕМЬЯ И ДРУЗЬЯ</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- ОСНОВНОЙ ИНТЕРФЕЙС ШТАБА                                  -->
+  <!-- ========================================================= -->
+  <header class="sticky top-0 z-30 bg-army-950/90 backdrop-blur-md border-b border-army-800">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2.5">
+        <span class="relative flex h-3 w-3">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-army-green opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-army-green"></span>
+        </span>
+        <span class="font-mono text-xs sm:text-sm font-bold tracking-wider text-white uppercase">БОЕВОЙ ПОСТ • БУДАНОВ Я.А.</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <span id="live-clock" class="font-mono text-xs text-army-accent bg-army-900 px-2.5 py-1 rounded border border-army-700">--:--:--</span>
+        <a href="#wishes-section" class="hidden sm:inline-block bg-army-accent/15 hover:bg-army-accent/25 text-army-accent border border-army-accent/40 font-mono text-xs px-3 py-1 rounded transition">
+          Написать Ярику ↓
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-8 space-y-10 w-full">
+
+    <!-- ========================================================= -->
+    <!-- БЛОК 1: КАРТОЧКА БОЙЦА (ЛИЧНОЕ ДЕЛО)                      -->
+    <!-- ========================================================= -->
+    <section class="bg-army-900/90 border border-army-700 rounded-2xl p-5 sm:p-8 shadow-2xl relative overflow-hidden">
+      <div class="absolute top-0 right-0 bg-army-accent text-black font-mono text-[10px] font-extrabold px-3 py-1 rounded-bl-lg uppercase tracking-widest">
+        ЛИЧНОЕ ДЕЛО № 081004
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-center">
+        <!-- Фотография Ярослава -->
+        <div class="md:col-span-4 flex flex-col items-center">
+          <div class="relative w-56 h-64 sm:w-64 sm:h-72 rounded-xl overflow-hidden border-2 border-army-600 shadow-2xl bg-army-950 group">
+            <img 
+              id="soldier-photo"
+              src="https://lh3.googleusercontent.com/d/1UYhdQluGfWQ1Yn1OVKNz9hWh0E0wM5EQ=w1000" 
+              onerror="if(this.src.indexOf('thumbnail')===-1){this.src='https://drive.google.com/thumbnail?id=1UYhdQluGfWQ1Yn1OVKNz9hWh0E0wM5EQ&sz=w1000';}else{this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 240%22><rect width=%22200%22 height=%22240%22 fill=%22%23151b15%22/><circle cx=%22100%22 cy=%2285%22 r=%2240%22 fill=%22%232f3d2f%22/><path d=%22M35 220 C35 155 165 155 165 220%22 fill=%22%232f3d2f%22/></svg>';}"
+              alt="Новобранец Буданов Ярослав Артурович" 
+              class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+            >
+            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3 text-center">
+              <span class="font-mono text-[11px] text-army-accent font-bold tracking-wider uppercase">ПРИЗЫВ ОСЕНЬ 2026</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Информация о бойце -->
+        <div class="md:col-span-8 space-y-5 text-center md:text-left">
+          <div>
+            <div class="inline-flex items-center space-x-2 bg-army-800 border border-army-600 px-3 py-1 rounded-full mb-3">
+              <span class="w-2 h-2 rounded-full bg-army-accent"></span>
+              <span id="service-phase-badge" class="font-mono text-xs text-gray-300 uppercase">Статус: Боевая готовность</span>
+            </div>
+            <h1 class="font-display text-2xl sm:text-4xl font-bold text-white uppercase tracking-tight leading-tight">
+              Новобранец Буданов Ярослав Артурович
+            </h1>
+            <p class="text-sm text-gray-400 mt-2">
+              Персональный штаб отсчёта времени до возвращения домой. Здесь близкие, родственники и друзья всегда могут узнать точный остаток службы и оставить пару тёплых слов.
+            </p>
+          </div>
+
+          <!-- Паспортные плашки дат -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+            <div class="bg-army-950/90 border border-army-800 p-3.5 rounded-xl">
+              <span class="text-[10px] font-mono text-gray-500 uppercase block">ДАТА ОТПРАВКИ</span>
+              <span class="font-mono text-sm sm:text-base font-bold text-white mt-0.5 block">26.10.2026</span>
+            </div>
+            <div class="bg-army-950/90 border border-army-800 p-3.5 rounded-xl">
+              <span class="text-[10px] font-mono text-gray-500 uppercase block">ДАТА ДЕМБЕЛЯ</span>
+              <span class="font-mono text-sm sm:text-base font-bold text-army-green mt-0.5 block">26.10.2027</span>
+            </div>
+            <div class="col-span-2 sm:col-span-1 bg-army-950/90 border border-army-800 p-3.5 rounded-xl">
+              <span class="text-[10px] font-mono text-gray-500 uppercase block">ЗВАНИЕ ПО СРОКУ</span>
+              <span id="soldier-rank-title" class="font-mono text-sm sm:text-base font-bold text-army-accent mt-0.5 block">Новобранец</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- БЛОК 2: ГЛАВНЫЙ ТАЙМЕР ДЕМБЕЛЯ И ПРОГРЕСС                 -->
+    <!-- ========================================================= -->
+    <section class="bg-army-900/90 border border-army-700 rounded-2xl p-5 sm:p-8 shadow-2xl space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-army-800 pb-4">
+        <div>
+          <h2 id="countdown-heading" class="font-display text-xl sm:text-2xl font-bold text-white uppercase tracking-wide">
+            ⏳ ДО ДЕМБЕЛЯ ЯРОСЛАВА ОСТАЛОСЬ:
+          </h2>
+          <p id="countdown-subtitle" class="text-xs text-gray-400">Точный расчёт в режиме реального времени</p>
+        </div>
+        <div class="bg-army-950 border border-army-700 px-3.5 py-2 rounded-xl self-start sm:self-auto">
+          <span class="text-[10px] font-mono text-gray-400 uppercase block">ПРОЙДЕНО СЛУЖБЫ:</span>
+          <span id="progress-percent-exact" class="font-mono text-base sm:text-lg font-extrabold text-army-accent">0.000000%</span>
+        </div>
+      </div>
+
+      <!-- 4 цифровых блока таймера -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div class="bg-army-950 border-2 border-army-700 rounded-2xl p-4 text-center shadow-inner">
+          <span id="t-days" class="font-mono text-3xl sm:text-5xl font-extrabold text-white block">365</span>
+          <span class="font-mono text-[11px] text-gray-400 uppercase tracking-widest mt-1 block">Дней</span>
+        </div>
+        <div class="bg-army-950 border-2 border-army-700 rounded-2xl p-4 text-center shadow-inner">
+          <span id="t-hours" class="font-mono text-3xl sm:text-5xl font-extrabold text-white block">00</span>
+          <span class="font-mono text-[11px] text-gray-400 uppercase tracking-widest mt-1 block">Часов</span>
+        </div>
+        <div class="bg-army-950 border-2 border-army-700 rounded-2xl p-4 text-center shadow-inner">
+          <span id="t-mins" class="font-mono text-3xl sm:text-5xl font-extrabold text-white block">00</span>
+          <span class="font-mono text-[11px] text-gray-400 uppercase tracking-widest mt-1 block">Минут</span>
+        </div>
+        <div class="bg-army-950 border-2 border-army-accent/60 rounded-2xl p-4 text-center shadow-inner">
+          <span id="t-secs" class="font-mono text-3xl sm:text-5xl font-extrabold text-army-accent block">00</span>
+          <span class="font-mono text-[11px] text-army-accent uppercase tracking-widest mt-1 block">Секунд</span>
+        </div>
+      </div>
+
+      <!-- Сводка в днях: Прошло / Осталось -->
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs font-mono">
+          <span class="text-army-green">Позади: <strong id="days-passed-label">0</strong> дн.</span>
+          <span class="text-gray-400">Всего: <strong>365</strong> дн.</span>
+          <span class="text-army-accent">Осталось: <strong id="days-left-label">365</strong> дн.</span>
+        </div>
+        <!-- Полоса прогресса -->
+        <div class="w-full h-4 bg-army-950 rounded-full overflow-hidden border border-army-700 p-0.5">
+          <div id="progress-bar-fill" class="h-full bg-gradient-to-r from-amber-600 via-army-accent to-army-green rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Вехи армейской службы -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 text-center font-mono text-[11px]">
+        <div id="stage-1" class="p-2 rounded-lg border border-army-700 bg-army-950 text-gray-400">
+          <div class="font-bold text-white">0–100 дн.</div>
+          <div>Дух / КМБ</div>
+        </div>
+        <div id="stage-2" class="p-2 rounded-lg border border-army-700 bg-army-950 text-gray-400">
+          <div class="font-bold text-white">100–182 дн.</div>
+          <div>Слон</div>
+        </div>
+        <div id="stage-3" class="p-2 rounded-lg border border-army-700 bg-army-950 text-gray-400">
+          <div class="font-bold text-white">182 дн.</div>
+          <div>Экватор / Черпак</div>
+        </div>
+        <div id="stage-4" class="p-2 rounded-lg border border-army-700 bg-army-950 text-gray-400">
+          <div class="font-bold text-white">265+ дн.</div>
+          <div>100 дней до приказа</div>
+        </div>
+        <div id="stage-5" class="col-span-2 sm:col-span-1 p-2 rounded-lg border border-army-700 bg-army-950 text-gray-400">
+          <div class="font-bold text-white">365 дн.</div>
+          <div>Дембель 🏠</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- БЛОК 3: ЖИЗНЕННЫЕ И ГЕОГРАФИЧЕСКИЕ ЭКВИВАЛЕНТЫ            -->
+    <!-- ========================================================= -->
+    <section class="bg-army-900/90 border border-army-700 rounded-2xl p-5 sm:p-8 shadow-2xl space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-army-800 pb-4">
+        <div>
+          <h2 class="font-display text-xl sm:text-2xl font-bold text-white uppercase tracking-wide">
+            🌍 ВЫСЛУГА ЯРОСЛАВА В ЭКВИВАЛЕНТАХ
+          </h2>
+          <p class="text-xs text-gray-400 mt-1">
+            Что означают прошедшие дни службы в масштабах географии, космоса и обычной жизни
+          </p>
+        </div>
+
+        <!-- Переключатель для просмотра любого дня (например 54-го дня) -->
+        <div class="bg-army-950 border border-army-700 rounded-xl p-3 flex flex-col space-y-2 min-w-[260px]">
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-gray-400">Расчёт на день службы:</span>
+            <span id="sim-day-badge" class="bg-army-accent text-black font-bold px-2 py-0.5 rounded">Реальный</span>
+          </div>
+          <input 
+            type="range" 
+            id="sim-day-slider" 
+            min="0" 
+            max="365" 
+            value="0" 
+            class="w-full cursor-pointer"
+          >
+          <div class="flex justify-between gap-2">
+            <button type="button" onclick="setSimDay(54)" class="text-[10px] font-mono bg-army-800 hover:bg-army-700 text-army-accent px-2 py-1 rounded border border-army-600 transition">
+              Пример: 54-й день
+            </button>
+            <button type="button" onclick="setSimDay(182)" class="text-[10px] font-mono bg-army-800 hover:bg-army-700 text-gray-300 px-2 py-1 rounded border border-army-600 transition">
+              Экватор (182 дн.)
+            </button>
+            <button type="button" onclick="setSimDay('real')" class="text-[10px] font-mono bg-army-800 hover:bg-army-700 text-army-green px-2 py-1 rounded border border-army-600 transition">
+              Сейчас
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Карточки эквивалентов -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        
+        <!-- Карточка 1: Нью-Йорк и пешие маршруты -->
+        <div class="bg-army-950 border border-army-800 hover:border-army-600 rounded-xl p-5 transition flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-2xl">🗽</span>
+              <span class="font-mono text-[10px] text-army-accent uppercase bg-army-900 px-2.5 py-1 rounded border border-army-800">География и шаг</span>
+            </div>
+            <h3 class="font-display font-bold text-white text-base mb-2">Пешком через мегаполисы</h3>
+            <p id="eq-ny-text" class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+              Загрузка расчёта...
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-army-900 font-mono text-[11px] text-army-accent" id="eq-ny-stat">
+            Дистанция: 0 км
+          </div>
+        </div>
+
+        <!-- Карточка 2: Марш-бросок по городам -->
+        <div class="bg-army-950 border border-army-800 hover:border-army-600 rounded-xl p-5 transition flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-2xl">🧭</span>
+              <span class="font-mono text-[10px] text-army-green uppercase bg-army-900 px-2.5 py-1 rounded border border-army-800">Маршрут на карте</span>
+            </div>
+            <h3 class="font-display font-bold text-white text-base mb-2">Большой путь по стране</h3>
+            <p id="eq-route-text" class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+              Загрузка расчёта...
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-army-900 font-mono text-[11px] text-army-green" id="eq-route-stat">
+            Точка маршрута
+          </div>
+        </div>
+
+        <!-- Карточка 3: Домашний уют и быт -->
+        <div class="bg-army-950 border border-army-800 hover:border-army-600 rounded-xl p-5 transition flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-2xl">☕</span>
+              <span class="font-mono text-[10px] text-amber-400 uppercase bg-army-900 px-2.5 py-1 rounded border border-army-800">Дом и семья</span>
+            </div>
+            <h3 class="font-display font-bold text-white text-base mb-2">Домашний счётчик заботы</h3>
+            <p id="eq-home-text" class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+              Загрузка расчёта...
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-army-900 font-mono text-[11px] text-amber-400" id="eq-home-stat">
+            Ждём за домашним столом
+          </div>
+        </div>
+
+        <!-- Карточка 4: Космос и Земля -->
+        <div class="bg-army-950 border border-army-800 hover:border-army-600 rounded-xl p-5 transition flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-2xl">🛰️</span>
+              <span class="font-mono text-[10px] text-sky-400 uppercase bg-army-900 px-2.5 py-1 rounded border border-army-800">Планетарный масштаб</span>
+            </div>
+            <h3 class="font-display font-bold text-white text-base mb-2">Космическое движение</h3>
+            <p id="eq-space-text" class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+              Загрузка расчёта...
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-army-900 font-mono text-[11px] text-sky-400" id="eq-space-stat">
+            Орбитальный полёт
+          </div>
+        </div>
+
+        <!-- Карточка 5: Армейский быт -->
+        <div class="bg-army-950 border border-army-800 hover:border-army-600 rounded-xl p-5 transition flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-2xl">🫡</span>
+              <span class="font-mono text-[10px] text-army-accent uppercase bg-army-900 px-2.5 py-1 rounded border border-army-800">Армейский устав</span>
+            </div>
+            <h3 class="font-display font-bold text-white text-base mb-2">Дисциплина и режим</h3>
+            <p id="eq-army-text" class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+              Загрузка расчёта...
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-army-900 font-mono text-[11px] text-army-accent" id="eq-army-stat">
+            Служба по уставу
+          </div>
+        </div>
+
+        <!-- Карточка 6: Культура и время -->
+        <div class="bg-army-950 border border-army-800 hover:border-army-600 rounded-xl p-5 transition flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-2xl">🎬</span>
+              <span class="font-mono text-[10px] text-purple-400 uppercase bg-army-900 px-2.5 py-1 rounded border border-army-800">Масштаб времени</span>
+            </div>
+            <h3 class="font-display font-bold text-white text-base mb-2">Кино и музыка</h3>
+            <p id="eq-culture-text" class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+              Загрузка расчёта...
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-army-900 font-mono text-[11px] text-purple-400" id="eq-culture-stat">
+            Хронометраж выслуги
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- БЛОК 4: СТЕНА НАПУТСТВИЙ И ПОЖЕЛАНИЙ                      -->
+    <!-- ========================================================= -->
+    <section id="wishes-section" class="bg-army-900/90 border border-army-700 rounded-2xl p-5 sm:p-8 shadow-2xl space-y-6">
+      <div class="border-b border-army-800 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h2 class="font-display text-xl sm:text-2xl font-bold text-white uppercase tracking-wide">
+            ✉️ СТЕНА НАПУТСТВИЙ И ДОБРЫХ СЛОВ ЯРОСЛАВУ
+          </h2>
+          <p class="text-xs text-gray-400 mt-1">
+            Оставьте пожелание, привет из дома или историю. Все записи бережно сохраняются на весь год службы — когда Ярик вернётся или зайдёт на сайт в увольнении, он прочитает каждое слово!
+          </p>
+        </div>
+        <div class="flex items-center space-x-2 text-xs font-mono text-army-green bg-army-950 px-3 py-1.5 rounded-lg border border-army-800 self-start">
+          <span class="w-2 h-2 rounded-full bg-army-green animate-pulse"></span>
+          <span>Записей на стене: <strong id="wishes-count">0</strong></span>
+        </div>
+      </div>
+
+      <!-- Форма отправки сообщения -->
+      <form id="wish-form" class="bg-army-950 border border-army-700 rounded-xl p-4 sm:p-6 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="wish-author" class="block text-xs font-mono uppercase text-gray-400 mb-1.5">Ваше имя / Кто вы для Ярика *</label>
+            <input 
+              type="text" 
+              id="wish-author" 
+              required
+              maxlength="50"
+              placeholder="Например: Мама, Папа, Бабушка, Друзья..." 
+              class="w-full bg-army-900 border border-army-700 focus:border-army-accent rounded-lg py-2.5 px-3.5 text-sm text-white placeholder:text-gray-600 focus:outline-none transition"
+            >
+          </div>
+          <div>
+            <label for="wish-tag" class="block text-xs font-mono uppercase text-gray-400 mb-1.5">Значок сообщения</label>
+            <select 
+              id="wish-tag" 
+              class="w-full bg-army-900 border border-army-700 focus:border-army-accent rounded-lg py-2.5 px-3.5 text-sm text-white focus:outline-none transition"
+            >
+              <option value="❤️ Родной дом">❤️ Родной дом и семья</option>
+              <option value="🫡 Гордимся и ждём">🫡 Гордимся и ждём</option>
+              <option value="🤝 Крепкая дружба">🤝 Братва и друзья</option>
+              <option value="🔥 Легкой службы">🔥 Лёгких берцев и быстрой службы</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="wish-message" class="block text-xs font-mono uppercase text-gray-400 mb-1.5">Ваше пожелание Ярославу *</label>
+          <textarea 
+            id="wish-message" 
+            rows="3" 
+            required
+            maxlength="1000"
+            placeholder="Напишите тёплые слова поддержки, которые согреют Ярика..." 
+            class="w-full bg-army-900 border border-army-700 focus:border-army-accent rounded-lg py-2.5 px-3.5 text-sm text-white placeholder:text-gray-600 focus:outline-none transition resize-y"
+          ></textarea>
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+          <span id="wish-status-msg" class="text-xs font-mono text-gray-500">
+            Запись сразу появится на стене у всех близких
+          </span>
+          <button 
+            type="submit" 
+            id="wish-submit-btn"
+            class="bg-army-accent hover:bg-amber-400 text-black font-display font-bold py-3 px-6 rounded-xl uppercase tracking-wider text-sm transition transform active:scale-95 shadow-lg"
+          >
+            ОТПРАВИТЬ НА СТЕНУ ✉️
+          </button>
+        </div>
+      </form>
+
+      <!-- Лента пожеланий -->
+      <div id="wishes-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+        <!-- Карточки генерируются автоматически -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Футер с кнопкой повторной проверки КПП -->
+  <footer class="border-t border-army-800 bg-army-950/90 py-6 mt-12">
+    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-gray-500">
+      <div>
+        YAROSLAVBUDANOV.RU • Новобранец Буданов Ярослав Артурович (2026–2027)
+      </div>
+      <button 
+        type="button" 
+        onclick="lockKppAgain()" 
+        class="text-gray-400 hover:text-army-accent underline decoration-dotted transition"
+      >
+        🚧 Закрыть шлагбаум (проверить КПП снова)
+      </button>
+    </div>
+  </footer>
+
+  <!-- ========================================================= -->
+  <!-- СКРИПТЫ: ЗВУК КПП, ТАЙМЕР, ЭКВИВАЛЕНТЫ И ВЕЧНАЯ БАЗА       -->
+  <!-- ========================================================= -->
+  <script>
+    /* ---------------------------------------------------------
+       1. АВТОНОМНЫЙ ЗВУКОВОЙ СИНТЕЗАТОР КПП (Web Audio API)
+       Не требует внешних mp3-файлов, работает вечно
+    --------------------------------------------------------- */
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playKppSound(type) {
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        if (type === 'error') {
+          // Двойной низкий сигнал отказа на КПП
+          [0, 0.18].forEach(offset => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(135, now + offset);
+            gain.gain.setValueAtTime(0.18, now + offset);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.14);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + offset);
+            osc.stop(now + offset + 0.15);
+          });
+        } else if (type === 'open') {
+          // 1. Подтверждающий армейский зуммер пропуска
+          [587.33, 880].forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+            gain.gain.setValueAtTime(0.2, now + idx * 0.12);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.18);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + idx * 0.12);
+            osc.stop(now + idx * 0.12 + 0.2);
+          });
+
+          // 2. Характерный звук электромотора и подъема стрелы шлагбаума
+          const motorOsc = ctx.createOscillator();
+          const motorGain = ctx.createGain();
+          motorOsc.type = 'sawtooth';
+          motorOsc.frequency.setValueAtTime(75, now + 0.25);
+          motorOsc.frequency.linearRampToValueAtTime(142, now + 1.45);
+          motorGain.gain.setValueAtTime(0.01, now + 0.25);
+          motorGain.gain.linearRampToValueAtTime(0.12, now + 0.4);
+          motorGain.gain.exponentialRampToValueAtTime(0.001, now + 1.55);
+          motorOsc.connect(motorGain);
+          motorGain.connect(ctx.destination);
+          motorOsc.start(now + 0.25);
+          motorOsc.stop(now + 1.6);
+
+          // 3. Финальный щелчок фиксатора в верхнем положении
+          const clickOsc = ctx.createOscillator();
+          const clickGain = ctx.createGain();
+          clickOsc.type = 'square';
+          clickOsc.frequency.setValueAtTime(420, now + 1.5);
+          clickGain.gain.setValueAtTime(0.15, now + 1.5);
+          clickGain.gain.exponentialRampToValueAtTime(0.001, now + 1.58);
+          clickOsc.connect(clickGain);
+          clickGain.connect(ctx.destination);
+          clickOsc.start(now + 1.5);
+          clickOsc.stop(now + 1.6);
+        }
+      } catch (e) {
+        console.warn('Audio error:', e);
+      }
+    }
+
+    /* ---------------------------------------------------------
+       2. ЛОГИКА КПП (ПАРОЛЬ 08102004)
+    --------------------------------------------------------- */
+    const KPP_SECRET = '08102004';
+    const KPP_STORAGE_KEY = 'yaroslav_kpp_unlocked_v1';
+
+    const kppOverlay = document.getElementById('kpp-overlay');
+    const kppForm = document.getElementById('kpp-form');
+    const kppInput = document.getElementById('kpp-input');
+    const kppError = document.getElementById('kpp-error');
+    const kppCard = document.getElementById('kpp-card');
+    const barrierArm = document.getElementById('barrier-arm');
+    const lightRed = document.getElementById('kpp-light-red');
+    const lightGreen = document.getElementById('kpp-light-green');
+    const statusText = document.getElementById('kpp-status-text');
+    const axleDot = document.getElementById('kpp-axle-dot');
+
+    // Если родственник уже вводил пароль ранее — пропускаем сразу
+    if (localStorage.getItem(KPP_STORAGE_KEY) === 'true') {
+      kppOverlay.classList.add('hidden');
+    }
+
+    kppForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const val = kppInput.value.trim().replace(/\D/g, '');
+
+      if (val === KPP_SECRET) {
+        kppError.classList.add('hidden');
+        playKppSound('open');
+
+        // Переключаем светофор на зелёный
+        lightRed.className = 'w-4 h-4 rounded-full bg-army-700 transition-all duration-300';
+        lightGreen.className = 'w-4 h-4 rounded-full bg-army-green shadow-[0_0_16px_#10b981] transition-all duration-300';
+        axleDot.className = 'w-2.5 h-2.5 rounded-full bg-army-green';
+        statusText.textContent = 'ПРОПУСК ПРИНЯТ • ПУТЬ ОТКРЫТ';
+        statusText.classList.replace('text-gray-300', 'text-army-green');
+
+        // Поднимаем шлагбаум
+        barrierArm.classList.add('open');
+
+        // Сохраняем доступ и плавно убираем оверлей
+        localStorage.setItem(KPP_STORAGE_KEY, 'true');
+        setTimeout(() => {
+          kppOverlay.classList.add('opacity-0', 'pointer-events-none');
+          setTimeout(() => kppOverlay.classList.add('hidden'), 700);
+        }, 1550);
+      } else {
+        playKppSound('error');
+        kppError.classList.remove('hidden');
+        kppCard.classList.remove('shake');
+        void kppCard.offsetWidth; // перезапуск анимации
+        kppCard.classList.add('shake');
+        kppInput.value = '';
+        kppInput.focus();
+      }
+    });
+
+    function lockKppAgain() {
+      localStorage.removeItem(KPP_STORAGE_KEY);
+      barrierArm.classList.remove('open');
+      lightRed.className = 'w-4 h-4 rounded-full bg-army-red shadow-[0_0_14px_#ef4444] transition-all duration-300';
+      lightGreen.className = 'w-4 h-4 rounded-full bg-army-700 transition-all duration-300';
+      axleDot.className = 'w-2.5 h-2.5 rounded-full bg-army-red animate-pulse';
+      statusText.textContent = 'КПП ЗАКРЫТО • ДОСТУП ПО ПАРОЛЮ';
+      statusText.classList.replace('text-army-green', 'text-gray-300');
+      kppInput.value = '';
+      kppOverlay.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ---------------------------------------------------------
+       3. ТАЙМЕР СЛУЖБЫ И КАЛЬКУЛЯТОР ЭКВИВАЛЕНТОВ
+       Старт: 26 октября 2026, 06:00 (местное время)
+       Дембель: 26 октября 2027, 06:00
+    --------------------------------------------------------- */
+    const START_DATE = new Date(2026, 9, 26, 6, 0, 0).getTime(); // Месяц 9 = Октябрь
+    const END_DATE   = new Date(2027, 9, 26, 6, 0, 0).getTime();
+    const TOTAL_MS   = END_DATE - START_DATE;
+
+    let simulatedDays = null; // null = реальное время, иначе число дней (0..365)
+
+    const sliderEl = document.getElementById('sim-day-slider');
+    const simBadgeEl = document.getElementById('sim-day-badge');
+
+    sliderEl.addEventListener('input', function() {
+      simulatedDays = parseFloat(this.value);
+      simBadgeEl.textContent = simulatedDays + ' дн. (просмотр)';
+      updateEquivalents(simulatedDays);
+    });
+
+    function setSimDay(val) {
+      if (val === 'real') {
+        simulatedDays = null;
+        simBadgeEl.textContent = 'Реальный';
+        updateTimersAndStats();
+      } else {
+        simulatedDays = Number(val);
+        sliderEl.value = simulatedDays;
+        simBadgeEl.textContent = simulatedDays + ' дн. (пример)';
+        updateEquivalents(simulatedDays);
+      }
+    }
+
+    function updateEquivalents(daysVal) {
+      // Если идёт 1-й день или до отправки, для наглядности берем минимум 1 день в случае демо, либо точное дробное значение
+      const d = Math.max(0, daysVal);
+      const displayDays = d < 1 && d > 0 ? d.toFixed(1) : Math.round(d);
+
+      // 1. География: Нью-Йорк (длина острова Манхэттен 21.6 км, строевой и суточный наряд ~15.5 км/день)
+      const kmWalked = (d * 15.5).toFixed(1);
+      const nyWalks = ( (d * 15.5) / 21.6 ).toFixed(1);
+      const redSquareWalks = Math.round((d * 15.5) / 0.33); // Красная площадь 330 м
+      document.getElementById('eq-ny-text').innerHTML = 
+        d <= 0.05
+          ? `Как только начнётся отсчёт, здесь появится пеший километраж Ярослава (нажми кнопку <b>«Пример: 54-й день»</b> выше, чтобы увидеть расчёт!).`
+          : `За <b>${displayDays} дн.</b> службы в армейском темпе Ярик намотал около <b>${kmWalked} км</b>. За это время можно было пройти весь Манхэттен (Нью-Йорк) от края до края <b>${nyWalks} раза</b> или пересечь Красную площадь <b>${redSquareWalks.toLocaleString('ru-RU')} раз</b>!`;
+      document.getElementById('eq-ny-stat').textContent = `Пройдено пешком: ~${kmWalked} км`;
+
+      // 2. Маршрут по городам
+      let routeComparison = 'выход за пределы родного города';
+      const kmNum = parseFloat(kmWalked);
+      if (kmNum >= 4500) routeComparison = 'путь от Москвы через всю Сибирь до самого Байкала!';
+      else if (kmNum >= 2500) routeComparison = 'расстояние от Москвы до солнечного Ташкента!';
+      else if (kmNum >= 1500) routeComparison = 'весь путь от Москвы до черноморского побережья Сочи!';
+      else if (kmNum >= 700) routeComparison = 'дорогу от Москвы до Санкт-Петербурга пешим строем!';
+      else if (kmNum >= 200) routeComparison = 'марш-бросок между соседними областными центрами!';
+
+      document.getElementById('eq-route-text').innerHTML =
+        d <= 0.05
+          ? `С каждым днём виртуальный маршрут Ярослава будет продвигаться по карте всё дальше.`
+          : `Если вытянуть все шаги Ярослава за <b>${displayDays} дн.</b> в одну прямую линию, он бы уже преодолел <b>${routeComparison}</b>`;
+      document.getElementById('eq-route-stat').textContent = `Масштаб: ${( (kmNum / 5665) * 100 ).toFixed(1)}% пути годового марша`;
+
+      // 3. Домашний уют и быт
+      const teaCups = Math.round(d * 3.5);
+      const homeDinners = Math.round(d * 2);
+      const alarmsSkipped = Math.round(d);
+      document.getElementById('eq-home-text').innerHTML =
+        d <= 0.05
+          ? `Дома уже заваривают чай и готовят любимые блюда к возвращению бойца.`
+          : `За <b>${displayDays} дн.</b> дома было бы выпито <b>${teaCups} кружек</b> горячего домашнего чая, съедено <b>${homeDinners} порций</b> домашнего ужина и пропущено <b>${alarmsSkipped} гражданских будильников</b>.`;
+      document.getElementById('eq-home-stat').textContent = `Накоплено домашних чаепитий: ${teaCups}`;
+
+      // 4. Планетарный и космический масштаб
+      const earthMillionKm = (d * 2.575).toFixed(1);
+      const issOrbits = Math.round(d * 15.5);
+      document.getElementById('eq-space-text').innerHTML =
+        d <= 0.05
+          ? `Земля начинает свой годовой виток вокруг Солнца вместе со службой Ярослава.`
+          : `Пока Ярослав служит <b>${displayDays} дн.</b>, планета Земля пролетела вместе с нами по орбите вокруг Солнца <b>${earthMillionKm} млн км</b>, а МКС облетела Землю <b>${issOrbits.toLocaleString('ru-RU')} раз</b>!`;
+      document.getElementById('eq-space-stat').textContent = `Полёт Земли: ${earthMillionKm} млн км`;
+
+      // 5. Армейский устав
+      const wakeUps = Math.floor(d);
+      const rations = Math.round(d * 3);
+      consthoursServed = Math.round(d * 24);
+      document.getElementById('eq-army-text').innerHTML =
+        d <= 0.05
+          ? `Форма подготовлена, впереди первая команда «Рота, подъём!» и присяга.`
+          : `Позади уже <b>${hoursServed.toLocaleString('ru-RU')} часов</b> выслуги, <b>${wakeUps}</b> чётких подъёмов в 06:00, столько же идеально заправленных кроватей и <b>${rations}</b> армейских приёмов пищи!`;
+      document.getElementById('eq-army-stat').textContent = `Часов в строю: ${hoursServed.toLocaleString('ru-RU')} ч.`;
+
+      // 6. Кино и музыка
+      const moviesCount = Math.round((d * 24) / 2.2);
+      const songsCount = Math.round((d * 24 * 60) / 3.2);
+      document.getElementById('eq-culture-text').innerHTML =
+        d <= 0.05
+          ? `Целый год — это сотни историй, которые мы обсудим при встрече.`
+          : `За время, которое Ярик уже отслужил (<b>${displayDays} дн.</b>), можно было без перерыва посмотреть <b>${moviesCount.toLocaleString('ru-RU')} фильмов</b> или прослушать подряд <b>${songsCount.toLocaleString('ru-RU')} любимых треков</b>!`;
+      document.getElementById('eq-culture-stat').textContent = `Эквивалент: ${moviesCount} полнометражных фильмов`;
+    }
+
+    function updateTimersAndStats() {
+      const now = Date.now();
+
+      // Системные часы в шапке
+      const nowDate = new Date(now);
+      document.getElementById('live-clock').textContent = nowDate.toLocaleTimeString('ru-RU');
+
+      let elapsedMs = now - START_DATE;
+      let remainingMs = END_DATE - now;
+
+      // Если еще до 26 октября 2026, 06:00
+      if (now < START_DATE) {
+        const toStartMs = START_DATE - now;
+        const hrsToStart = Math.floor(toStartMs / (1000 * 60 * 60));
+        const minsToStart = Math.floor((toStartMs % (1000 * 60 * 60)) / (1000 * 60));
+        document.getElementById('service-phase-badge').textContent = `Отправка 26 октября (через ${hrsToStart} ч. ${minsToStart} мин.)`;
+        document.getElementById('countdown-subtitle').textContent = 'Отсчёт начнется 26 октября 2026 в 06:00 (сейчас на таймере полные 365 суток)';
+        elapsedMs = 0;
+        remainingMs = TOTAL_MS;
+      } else if (now >= END_DATE) {
+        // Дембель наступил!
+        document.getElementById('service-phase-badge').textContent = 'ДЕМБЕЛЬ! СЛУЖБА ОКОНЧЕНА 🎉';
+        document.getElementById('countdown-heading').textContent = '🎉 ЯРОСЛАВ ДОМА! С ДЕМБЕЛЕМ!';
+        elapsedMs = TOTAL_MS;
+        remainingMs = 0;
+      } else {
+        document.getElementById('service-phase-badge').textContent = 'Статус: На боевом посту (идёт служба)';
+        document.getElementById('countdown-subtitle').textContent = 'Каждая секунда приближает возвращение Ярослава домой';
+      }
+
+      // Точный процент с 6 знаками после запятой
+      const pct = Math.min(100, Math.max(0, (elapsedMs / TOTAL_MS) * 100));
+      document.getElementById('progress-percent-exact').textContent = pct.toFixed(6) + '%';
+      document.getElementById('progress-bar-fill').style.width = pct + '%';
+
+      // Разбивка оставшегося времени
+      const totalSecsLeft = Math.max(0, Math.floor(remainingMs / 1000));
+      const daysLeft = Math.floor(totalSecsLeft / 86400);
+      const hoursLeft = Math.floor((totalSecsLeft % 86400) / 3600);
+      const minsLeft = Math.floor((totalSecsLeft % 3600) / 60);
+      const secsLeft = totalSecsLeft % 60;
+
+      document.getElementById('t-days').textContent = String(daysLeft);
+      document.getElementById('t-hours').textContent = String(hoursLeft).padStart(2, '0');
+      document.getElementById('t-mins').textContent = String(minsLeft).padStart(2, '0');
+      document.getElementById('t-secs').textContent = String(secsLeft).padStart(2, '0');
+
+      const daysPassedExact = elapsedMs / (1000 * 60 * 60 * 24);
+      const daysPassedInt = Math.floor(daysPassedExact);
+
+      document.getElementById('days-passed-label').textContent = daysPassedInt;
+      document.getElementById('days-left-label').textContent = Math.ceil(remainingMs / (1000 * 60 * 60 * 24));
+
+      // Подсветка этапа службы
+      const stages = ['stage-1', 'stage-2', 'stage-3', 'stage-4', 'stage-5'];
+      stages.forEach(id => {
+        document.getElementById(id).className = 'p-2 rounded-lg border border-army-700 bg-army-950 text-gray-400';
+      });
+
+      let activeStage = 'stage-1';
+      let rankTitle = 'Новобранец / Дух';
+      if (daysPassedInt >= 365) { activeStage = 'stage-5'; rankTitle = 'Дембель в запасе'; }
+      else if (daysPassedInt >= 265) { activeStage = 'stage-4'; rankTitle = 'Дед (100 дней до приказа)'; }
+      else if (daysPassedInt >= 182) { activeStage = 'stage-3'; rankTitle = 'Черпак (Экватор пройден)'; }
+      else if (daysPassedInt >= 100) { activeStage = 'stage-2'; rankTitle = 'Слон'; }
+
+      document.getElementById(activeStage).className = 'p-2 rounded-lg border-2 border-army-accent bg-army-800 text-army-accent shadow-md';
+      document.getElementById('soldier-rank-title').textContent = rankTitle;
+
+      // Обновляем эквиваленты (если пользователь не передвинул ползунок демо-просмотра)
+      if (simulatedDays === null) {
+        sliderEl.value = Math.min(365, Math.round(daysPassedExact));
+        updateEquivalents(daysPassedExact);
+      }
+    }
+
+    setInterval(updateTimersAndStats, 200);
+    updateTimersAndStats();
+
+    /* ---------------------------------------------------------
+       4. БЕЗОТКАЗНАЯ СТЕНА НАПУТСТВИЙ (Firebase Realtime + LocalStorage)
+       Работает 24/7 весь год, синхронизируется между всеми телефонами
+    --------------------------------------------------------- */
+    const LOCAL_WISHES_KEY = 'yaroslav_budanov_wishes_backup_v1';
+    const wishForm = document.getElementById('wish-form');
+    const wishesList = document.getElementById('wishes-list');
+    const wishesCount = document.getElementById('wishes-count');
+    const wishStatusMsg = document.getElementById('wish-status-msg');
+
+    // Стартовое приветственное сообщение, если стена ещё пустая
+    const DEFAULT_WISHES = [
+      {
+        id: 'init_1',
+        author: 'Близкие и друзья',
+        tag: '🫡 Гордимся и ждём',
+        message: 'Ярик, родной! Мы запустили этот штаб специально в твою честь. Лёгких тебе берцев, верных товарищей рядом и спокойной службы. Каждый день здесь тикает таймер до твоего возвращения. Ждём дома!',
+        time: new Date(2026, 9, 25, 12, 0).getTime()
+      }
+    ];
+
+    let wishesCache = [];
+    try {
+      const saved = localStorage.getItem(LOCAL_WISHES_KEY);
+      wishesCache = saved ? JSON.parse(saved) : DEFAULT_WISHES;
+    } catch (e) {
+      wishesCache = DEFAULT_WISHES;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatWishDate(ts) {
+      try {
+        const d = new Date(ts);
+        return d.toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }) + ' в ' +
+               d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      } catch (e) {
+        return 'Недавно';
+      }
+    }
+
+    function renderWishes(list) {
+      const sorted = [...list].sort((a, b) => (b.time || 0) - (a.time || 0));
+      wishesCount.textContent = sorted.length;
+
+      wishesList.innerHTML = sorted.map(item => `
+        <article class="bg-army-950 border border-army-800 hover:border-army-600 rounded-xl p-5 flex flex-col justify-between shadow-lg transition">
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-3">
+              <div>
+                <h3 class="font-display font-bold text-white text-base">${escapeHtml(item.author)}</h3>
+                <span class="font-mono text-[10px] text-gray-500 block">${formatWishDate(item.time)}</span>
+              </div>
+              <span class="font-mono text-[10px] bg-army-900 border border-army-700 text-army-accent px-2.5 py-1 rounded-full whitespace-nowrap">
+                ${escapeHtml(item.tag || '❤️ Родной дом')}
+              </span>
+            </div>
+            <p class="text-sm text-gray-200 leading-relaxed whitespace-pre-line break-words">${escapeHtml(item.message)}</p>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    // Отрисовываем мгновенно из кэша
+    renderWishes(wishesCache);
+
+    // Подключаем облачную синхронизацию в реальном времени (Firebase RTDB)
+    let wishesRef = null;
+    try {
+      const firebaseConfig = {
+        databaseURL: "https://sphynx-game-default-rtdb.firebaseio.com"
+      };
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      const db = firebase.database();
+      wishesRef = db.ref('yaroslav_budanov_2026/wishes');
+
+      wishesRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const cloudList = Object.keys(data).map(key => ({
+            id: key,
+            ...data[key]
+          }));
+          wishesCache = cloudList;
+          try {
+            localStorage.setItem(LOCAL_WISHES_KEY, JSON.stringify(wishesCache));
+          } catch (e) {}
+          renderWishes(wishesCache);
+        } else {
+          // Если в облаке совсем пусто — записываем стартовое напутствие
+          wishesRef.push(DEFAULT_WISHES[0]);
+        }
+      });
+    } catch (err) {
+      console.warn('Cloud sync fallback to local:', err);
+    }
+
+    // Отправка нового пожелания
+    wishForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const authorEl = document.getElementById('wish-author');
+      const tagEl = document.getElementById('wish-tag');
+      const msgEl = document.getElementById('wish-message');
+      const submitBtn = document.getElementById('wish-submit-btn');
+
+      const author = authorEl.value.trim();
+      const tag = tagEl.value;
+      const message = msgEl.value.trim();
+
+      if (!author || !message) return;
+
+      const newWish = {
+        author,
+        tag,
+        message,
+        time: Date.now()
+      };
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'ОТПРАВКА...';
+
+      // 1. Мгновенно сохраняем локально и показываем на экране
+      wishesCache.unshift(newWish);
+      try {
+        localStorage.setItem(LOCAL_WISHES_KEY, JSON.stringify(wishesCache));
+      } catch (err) {}
+      renderWishes(wishesCache);
+
+      // 2. Отправляем в облачную базу для всех устройств
+      if (wishesRef) {
+        wishesRef.push(newWish).then(() => {
+          wishStatusMsg.textContent = '✅ Напутствие успешно добавлено на стену!';
+          wishStatusMsg.className = 'text-xs font-mono text-army-green';
+        }).catch(() => {
+          wishStatusMsg.textContent = '✅ Сохранено! Появится у всех при обновлении сети.';
+          wishStatusMsg.className = 'text-xs font-mono text-army-accent';
+        }).finally(() => {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'ОТПРАВИТЬ НА СТЕНУ ✉️';
+          msgEl.value = '';
+        });
+      } else {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'ОТПРАВИТЬ НА СТЕНУ ✉️';
+        msgEl.value = '';
+        wishStatusMsg.textContent = '✅ Напутствие опубликовано на стене!';
+        wishStatusMsg.className = 'text-xs font-mono text-army-green';
+      }
+    });
+  </script>
+</body>
+</html>
